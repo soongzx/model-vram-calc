@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>model-vram-calc — 大模型显存估算工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0f;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(66, 133, 244, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(20, 20, 28, 0.85);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 32px 28px 24px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .header h1 {
+            font-size: 22px; font-weight: 700; color: #f0f0f4; margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .header p {
+            font-size: 13px; color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 0.5px;
+        }
+
+        .content { padding: 24px 28px 32px; }
+
+        .section { margin-bottom: 28px; }
+
+        .section-title {
+            font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.25);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 14px;
+        }
+
+        .model-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+            gap: 8px;
+        }
+
+        .model-option {
+            padding: 14px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .model-option:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .model-option.selected {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.35);
+        }
+
+        .model-option .model-name {
+            font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.85); margin-bottom: 3px;
+        }
+        .model-option .model-meta {
+            font-size: 11px; color: rgba(255, 255, 255, 0.3);
+        }
+        .model-option .model-badge {
+            display: inline-block; font-size: 9px; padding: 1px 6px;
+            background: rgba(99, 102, 241, 0.2); color: rgba(99, 102, 241, 0.7);
+            border-radius: 4px; margin-top: 4px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .form-row.three {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        .form-row.four {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label {
+            display: block; font-size: 12px; font-weight: 500; color: rgba(255, 255, 255, 0.4); margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            font-size: 14px; color: rgba(255, 255, 255, 0.85);
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        .form-group input::placeholder {
+            color: rgba(255, 255, 255, 0.15);
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.08);
+        }
+        .form-group select option {
+            background: #18181e; color: rgba(255,255,255,0.85);
+        }
+        .form-group .param-note {
+            font-size: 10px; color: rgba(255, 255, 255, 0.18); margin-top: 3px;
+        }
+
+        .form-hint {
+            font-size: 11px; color: rgba(255, 255, 255, 0.2); margin-top: 6px;
+        }
+
+        .calculate-btn {
+            width: 100%; padding: 14px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            letter-spacing: 0.5px;
+            transition: all .2s;
+            margin-bottom: 6px;
+        }
+        .calculate-btn:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .results {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px; padding: 20px;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .result-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px; padding: 16px 10px; text-align: center;
+        }
+        .result-value {
+            font-size: 28px; font-weight: 700; color: rgba(255, 255, 255, 0.9); margin-bottom: 2px;
+            font-variant-numeric: tabular-nums;
+        }
+        .result-value.warn { color: #f59e0b; }
+        .result-value.good { color: #34d399; }
+        .result-unit  { font-size: 12px; color: rgba(255, 255, 255, 0.25); }
+        .result-label { font-size: 11px; color: rgba(255, 255, 255, 0.2); margin-top: 4px; }
+
+        .prog-bar-wrap {
+            grid-column: 1 / -1;
+            margin-top: 14px;
+        }
+        .prog-bar-label {
+            display: flex; justify-content: space-between; font-size: 11px; color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 4px;
+        }
+        .prog-bar {
+            height: 6px; border-radius: 3px;
+            background: rgba(255, 255, 255, 0.06); overflow: hidden;
+        }
+        .prog-bar-fill {
+            height: 100%; border-radius: 3px;
+            background: linear-gradient(90deg, #34d399, #f59e0b, #ef4444);
+            transition: width .3s;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 14px 18px; font-size: 12px; color: rgba(255, 255, 255, 0.45); margin-top: 14px;
+            line-height: 1.6;
+        }
+        .info-box strong { color: rgba(255, 255, 255, 0.55); }
+        .info-box ul { margin-left: 18px; margin-top: 4px; }
+        .info-box li { margin-bottom: 2px; }
+
+        .gpu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .gpu-chip {
+            padding: 10px 6px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            cursor: pointer; text-align: center; font-size: 12px; font-weight: 500;
+            transition: all .2s;
+        }
+        .gpu-chip:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .gpu-chip.selected {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.35);
+        }
+        .gpu-chip .gpu-name { color: rgba(255, 255, 255, 0.6); }
+        .gpu-chip .gpu-mem  { font-size: 11px; color: rgba(255, 255, 255, 0.25); margin-top: 2px; }
+
+        @media (max-width: 640px) {
+            body { padding: 12px; }
+            .content { padding: 16px; }
+            .form-row, .form-row.three, .form-row.four { grid-template-columns: 1fr; }
+            .results-grid { grid-template-columns: 1fr 1fr; }
+            .model-card { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>大模型显存估算</h1>
+        <p>model-vram-calc · 显存占用 · KV Cache · 并发能力</p>
+    </div>
+
+    <div class="content">
+
+        <div class="section">
+            <div class="section-title">选择模型 (100B+)</div>
+            <div class="model-card" id="modelCard"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">权重参数</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>模型大小 (GB · FP16)</label>
+                    <input type="number" id="modelSize" min="1" step="1" value="260" placeholder="FP16 模型大小">
+                </div>
+                <div class="form-group">
+                    <label>量化方式</label>
+                    <select id="quantization">
+                        <option value="fp16">FP16 (2 bytes/param)</option>
+                        <option value="bf16">BF16 (2 bytes/param)</option>
+                        <option value="fp8">FP8 (1 byte/param)</option>
+                        <option value="int8">INT8 (1 byte/param)</option>
+                        <option value="fp4">FP4 (0.5 byte/param)</option>
+                        <option value="int4">INT4 (0.5 byte/param)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">架构参数 (KV Cache 估算所用)</div>
+            <div class="form-row four">
+                <div class="form-group">
+                    <label>hidden dim 隐藏层维度</label>
+                    <input type="number" id="hiddenDim" min="64" step="64" value="7168" placeholder="hidden dim">
+                    <div class="param-note">embed / hidden_size</div>
+                </div>
+                <div class="form-group">
+                    <label>layers 层数</label>
+                    <input type="number" id="numLayers" min="1" step="1" value="62" placeholder="num layers">
+                    <div class="param-note">num_hidden_layers</div>
+                </div>
+                <div class="form-group">
+                    <label>Q heads 注意力头数</label>
+                    <input type="number" id="attnHeads" min="1" step="1" value="64" placeholder="Q heads">
+                    <div class="param-note">num_attention_heads</div>
+                </div>
+                <div class="form-group">
+                    <label>KV heads (GQA)</label>
+                    <input type="number" id="kvHeads" min="1" step="1" value="8" placeholder="KV heads">
+                    <div class="param-note">num_key_value_heads</div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>上下文长度 (tokens)</label>
+                    <select id="contextLen">
+                        <option value="16384">16K</option>
+                        <option value="32768">32K</option>
+                        <option value="65536">64K</option>
+                        <option value="131072">128K</option>
+                        <option value="200704">200K</option>
+                        <option value="327680">320K</option>
+                        <option value="1048576">1M</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>KV Cache 格式</label>
+                    <select id="kvCacheType">
+                        <option value="fp16">FP16 (2 bytes/elem) — 传统默认</option>
+                        <option value="fp8" selected>FP8 (1 byte/elem) — vLLM/SGLang 主流</option>
+                        <option value="fp4">INT4/FP4 (0.5 byte/elem) — NVFP4 / MXFP4</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-hint">
+                KV比例 = KV heads / Q heads &rightarrow; KV维度 = hidden dim &times; KV比例
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">GPU 配置</div>
+            <div class="gpu-grid" id="gpuGrid"></div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>单卡显存 (GB)</label>
+                    <input type="number" id="gpuMemory" min="1" step="1" value="141" placeholder="单卡显存">
+                </div>
+                <div class="form-group">
+                    <label>GPU 数量</label>
+                    <input type="number" id="gpuCount" min="1" step="1" value="8" placeholder="GPU 数量">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>系统预留显存 (GB)</label>
+                    <input type="number" id="reservedMemory" min="0" step="0.5" value="4" placeholder="其他进程占用">
+                </div>
+                <div class="form-group">
+                    <label>推理开销比例</label>
+                    <select id="overheadRatio">
+                        <option value="0.08">8% (优化部署)</option>
+                        <option value="0.12" selected>12% (vLLM 默认)</option>
+                        <option value="0.15">15% (SGLang)</option>
+                        <option value="0.2">20% (保守估计)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="calculate()">重新计算</button>
+
+        <div class="section">
+            <div class="section-title">计算结果</div>
+            <div class="results">
+                <div class="results-grid">
+                    <div class="result-card">
+                        <div class="result-value" id="modelWeightMem">--</div>
+                        <div class="result-unit">GB</div>
+                        <div class="result-label">模型权重显存</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="kvCacheMem">--</div>
+                        <div class="result-unit">GB</div>
+                        <div class="result-label">KV Cache / Session</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="sessionMemory">--</div>
+                        <div class="result-unit">GB</div>
+                        <div class="result-label">单Session 总显存</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="maxConcurrency">--</div>
+                        <div class="result-unit">并发</div>
+                        <div class="result-label">最大并发 Session</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="totalGpuMem">--</div>
+                        <div class="result-unit">GB</div>
+                        <div class="result-label">集群总显存</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-value" id="minGpus">--</div>
+                        <div class="result-unit">张</div>
+                        <div class="result-label">最少 GPU 数量</div>
+                    </div>
+                </div>
+                <div class="prog-bar-wrap">
+                    <div class="prog-bar-label">
+                        <span>显存占用率</span>
+                        <span id="usagePercent">--%</span>
+                    </div>
+                    <div class="prog-bar"><div class="prog-bar-fill" id="progFill" style="width:0%"></div></div>
+                </div>
+                <div class="info-box" id="infoBox" style="display:none;">
+                    <strong>计算明细：</strong>
+                    <ul>
+                        <li id="info1"></li>
+                        <li id="info2"></li>
+                        <li id="info3"></li>
+                        <li id="info4"></li>
+                        <li id="info5"></li>
+                        <li id="info6"></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const contextOptions = [
+    { label: '16K', value: 16384 },
+    { label: '32K', value: 32768 },
+    { label: '64K', value: 65536 },
+    { label: '128K', value: 131072 },
+    { label: '200K', value: 200704 },
+    { label: '320K', value: 327680 },
+    { label: '1M', value: 1048576 },
+];
+
+const models = [
+    { name: 'DeepSeek V4-Pro',  params: '1.6T MoE 49B active',     size: 3200, h: 7168,  layers: 61, attnHeads: 64, kvHeads: 8, maxCtx: 1048576, badge: '旗舰' },
+    { name: 'DeepSeek V4-Flash',params: '284B MoE 13B active',     size: 568,  h: 4096,  layers: 43, attnHeads: 32, kvHeads: 8, maxCtx: 1048576, badge: '最新' },
+    { name: 'DeepSeek V3.2',    params: '671B MoE 37B active',     size: 1342, h: 7168,  layers: 67, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
+    { name: 'DeepSeek V3.1',    params: '671B MoE 37B active',     size: 1342, h: 7168,  layers: 67, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
+    { name: 'DeepSeek V3',      params: '671B MoE 37B active',     size: 1342, h: 7168,  layers: 67, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
+    { name: 'DeepSeek R1',      params: '660B MoE 37B active',     size: 1320, h: 7168,  layers: 67, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
+    { name: 'GLM-5',            params: '745B MoE 44B active',     size: 1490, h: 7168,  layers: 62, attnHeads: 64, kvHeads: 8, maxCtx: 200704,  badge: '' },
+    { name: 'GLM-5.1',          params: '744B MoE 40B active',     size: 1488, h: 7168,  layers: 62, attnHeads: 64, kvHeads: 8, maxCtx: 200704,  badge: '' },
+    { name: 'Qwen3.6 35B-A3B',  params: '35B MoE 3B active',      size: 70,   h: 3072,  layers: 40, attnHeads: 48, kvHeads: 8, maxCtx: 1048576, badge: 'Coding' },
+    { name: 'Qwen3 235B',       params: '235B MoE',                size: 470,  h: 5120,  layers: 60, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
+    { name: 'Qwen3.5 235B',     params: '235B MoE',                size: 470,  h: 5120,  layers: 60, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
+    { name: 'Minimax M2.7',     params: '230B MoE 10B active',     size: 460,  h: 3072,  layers: 62, attnHeads: 48, kvHeads: 8, maxCtx: 200704,  badge: '' },
+];
+
+const gpuPresets = [
+    { name: 'H200 141G', mem: 141 },
+    { name: 'H20 141G',  mem: 141 },
+    { name: 'B200 192G', mem: 192 },
+    { name: 'RTX 5090',  mem: 32 },
+    { name: 'RTX 4090',  mem: 24 },
+    { name: 'A710E',     mem: 96 },
+    { name: '真武810E',  mem: 96 },
+];
+
+function initModels() {
+    const card = document.getElementById('modelCard');
+    models.forEach(m => {
+        const opt = document.createElement('div');
+        opt.className = 'model-option';
+        let badgeHtml = '';
+        if (m.badge) badgeHtml = `<div class="model-badge">${m.badge}</div>`;
+        opt.innerHTML = `<div class="model-name">${m.name}</div><div class="model-meta">${m.params} · ${m.size}GB</div>${badgeHtml}`;
+        opt.onclick = (e) => selectModel(m, e);
+        card.appendChild(opt);
+    });
+}
+
+function initGpus() {
+    const grid = document.getElementById('gpuGrid');
+    gpuPresets.forEach(g => {
+        const chip = document.createElement('div');
+        chip.className = 'gpu-chip';
+        chip.innerHTML = `<div class="gpu-name">${g.name}</div><div class="gpu-mem">${g.mem} GB</div>`;
+        chip.onclick = () => {
+            document.querySelectorAll('.gpu-chip').forEach(c => c.classList.remove('selected'));
+            chip.classList.add('selected');
+            document.getElementById('gpuMemory').value = g.mem;
+        };
+        grid.appendChild(chip);
+    });
+    document.querySelector('.gpu-chip').classList.add('selected');
+}
+
+function initContextOptions() {
+    const sel = document.getElementById('contextLen');
+    sel.innerHTML = '';
+    contextOptions.forEach(opt => {
+        const o = document.createElement('option');
+        o.value = opt.value;
+        o.textContent = opt.label;
+        sel.appendChild(o);
+    });
+}
+
+function selectModel(model, e) {
+    document.querySelectorAll('.model-option').forEach(el => el.classList.remove('selected'));
+    e.currentTarget.classList.add('selected');
+    document.getElementById('modelSize').value  = model.size;
+    document.getElementById('hiddenDim').value  = model.h;
+    document.getElementById('numLayers').value  = model.layers;
+    document.getElementById('attnHeads').value  = model.attnHeads;
+    document.getElementById('kvHeads').value    = model.kvHeads;
+    document.getElementById('contextLen').value = model.maxCtx;
+}
+
+function calculate() {
+    const modelSizeGB    = parseFloat(document.getElementById('modelSize').value);
+    const quantization   = document.getElementById('quantization').value;
+    const hiddenDim      = parseInt(document.getElementById('hiddenDim').value);
+    const numLayers      = parseInt(document.getElementById('numLayers').value);
+    const attnHeads      = parseInt(document.getElementById('attnHeads').value);
+    const kvHeads        = parseInt(document.getElementById('kvHeads').value);
+    const contextLen     = parseInt(document.getElementById('contextLen').value);
+    const kvCacheType    = document.getElementById('kvCacheType').value;
+    const gpuMemoryGB    = parseFloat(document.getElementById('gpuMemory').value);
+    const gpuCount       = parseInt(document.getElementById('gpuCount').value);
+    const reservedGB     = parseFloat(document.getElementById('reservedMemory').value);
+    const overheadRatio  = parseFloat(document.getElementById('overheadRatio').value);
+
+    if (!modelSizeGB || !gpuMemoryGB || !hiddenDim || !numLayers) {
+        alert('请填写完整参数'); return;
+    }
+
+    const quantMap  = { fp16: 1, bf16: 1, fp8: 0.5, int8: 0.5, fp4: 0.25, int4: 0.25 };
+    const quantName = { fp16: 'FP16', bf16: 'BF16', fp8: 'FP8', int8: 'INT8', fp4: 'FP4', int4: 'INT4' };
+    const ratio     = quantMap[quantization];
+    const qLabel    = quantName[quantization];
+
+    const modelWeightMem = modelSizeGB * ratio;
+
+    const kvRatio  = kvHeads / attnHeads;
+    const kvDim    = hiddenDim * kvRatio;
+    const kvBytes  = kvCacheType === 'fp16' ? 2 : kvCacheType === 'fp8' ? 1 : 0.5;
+    const kvCacheSizeGB = (2 * numLayers * kvDim * contextLen * kvBytes) / 1e9;
+
+    const overheadGB = modelWeightMem * overheadRatio;
+    const sessionMemoryGB = modelWeightMem + kvCacheSizeGB + overheadGB;
+
+    const clusterTotalGB = gpuMemoryGB * gpuCount;
+    const availableGB    = clusterTotalGB - reservedGB;
+    const minGpus        = Math.ceil((modelWeightMem + reservedGB) / gpuMemoryGB);
+    const maxConcurrency = Math.floor((availableGB - modelWeightMem) / (kvCacheSizeGB + overheadGB));
+
+    document.getElementById('modelWeightMem').textContent = modelWeightMem.toFixed(1);
+    document.getElementById('kvCacheMem').textContent     = kvCacheSizeGB.toFixed(2);
+    document.getElementById('sessionMemory').textContent  = sessionMemoryGB.toFixed(1);
+    document.getElementById('maxConcurrency').textContent = maxConcurrency > 0 ? maxConcurrency : '0';
+    document.getElementById('totalGpuMem').textContent    = clusterTotalGB.toFixed(0);
+    document.getElementById('minGpus').textContent        = minGpus;
+
+    const usagePct = ((modelWeightMem + kvCacheSizeGB + overheadGB) / availableGB) * 100;
+    document.getElementById('usagePercent').textContent = usagePct.toFixed(1) + '%';
+    document.getElementById('progFill').style.width = Math.min(usagePct, 100) + '%';
+
+    const concurrencyEl = document.getElementById('maxConcurrency');
+    concurrencyEl.className = 'result-value' + (maxConcurrency <= 0 ? ' warn' : maxConcurrency >= 4 ? ' good' : '');
+
+    const ctxLabel = contextOptions.find(o => o.value == contextLen);
+    const ctxStr = ctxLabel ? ctxLabel.label : contextLen;
+
+    document.getElementById('infoBox').style.display = 'block';
+    document.getElementById('info1').textContent =
+        `权重: ${modelSizeGB} GB (FP16) × ${ratio} (${qLabel}) = ${modelWeightMem.toFixed(1)} GB`;
+    document.getElementById('info2').textContent =
+        `KV Cache: 2 × ${numLayers}层 × ${hiddenDim}维 × ${kvRatio.toFixed(2)} (KV比例) × ${ctxStr} × ${kvBytes}B = ${kvCacheSizeGB.toFixed(2)} GB`;
+    document.getElementById('info3').textContent =
+        `推理开销: ${modelWeightMem.toFixed(1)} × ${overheadRatio} = ${overheadGB.toFixed(1)} GB`;
+    document.getElementById('info4').textContent =
+        `单 session: ${modelWeightMem.toFixed(1)} + ${kvCacheSizeGB.toFixed(2)} + ${overheadGB.toFixed(1)} = ${sessionMemoryGB.toFixed(1)} GB`;
+    document.getElementById('info5').textContent =
+        `集群 ${gpuCount}×${gpuMemoryGB}GB = ${clusterTotalGB}GB, 可用 ${availableGB.toFixed(0)} GB (扣 ${reservedGB} GB 预留)`;
+    document.getElementById('info6').textContent =
+        `最少需要 ${minGpus} 张 GPU 加载权重, 剩余空间支持 ${maxConcurrency > 0 ? maxConcurrency : '0'} 个并发 session`;
+}
+
+initModels();
+initGpus();
+initContextOptions();
+calculate();
+</script>
+</body>
+</html>
