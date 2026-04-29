@@ -88,8 +88,9 @@
             border-color: rgba(255, 255, 255, 0.12);
         }
         .model-option.selected {
-            background: rgba(99, 102, 241, 0.1);
-            border-color: rgba(99, 102, 241, 0.35);
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.6);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
         }
 
         .model-option .model-name {
@@ -241,8 +242,9 @@
             border-color: rgba(255, 255, 255, 0.12);
         }
         .gpu-chip.selected {
-            background: rgba(99, 102, 241, 0.1);
-            border-color: rgba(99, 102, 241, 0.35);
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.6);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
         }
         .gpu-chip .gpu-name { color: rgba(255, 255, 255, 0.6); }
         .gpu-chip .gpu-mem  { font-size: 11px; color: rgba(255, 255, 255, 0.25); margin-top: 2px; }
@@ -330,8 +332,9 @@
             .model-option .model-meta { font-size: 11px; }
             .model-option .model-badge { font-size: 10px; padding: 2px 7px; margin-top: 6px; }
             .model-option.selected {
-                background: rgba(99, 102, 241, 0.15) !important;
-                border-color: rgba(99, 102, 241, 0.5);
+                background: rgba(99, 102, 241, 0.22) !important;
+                border-color: rgba(99, 102, 241, 0.7) !important;
+                box-shadow: 0 0 14px rgba(99, 102, 241, 0.2);
             }
 
             /* 表单网格 - 双列布局 */
@@ -358,8 +361,9 @@
                 border-color: rgba(255, 255, 255, 0.15);
             }
             .gpu-chip.selected {
-                background: rgba(99, 102, 241, 0.15) !important;
-                border-color: rgba(99, 102, 241, 0.5);
+                background: rgba(99, 102, 241, 0.22) !important;
+                border-color: rgba(99, 102, 241, 0.7) !important;
+                box-shadow: 0 0 14px rgba(99, 102, 241, 0.2);
             }
             .gpu-chip .gpu-name { font-size: 12px; }
             .gpu-chip .gpu-mem { font-size: 11px; margin-top: 3px; }
@@ -427,10 +431,6 @@
                 background: rgba(255, 255, 255, 0.03);
                 border-color: rgba(255, 255, 255, 0.06);
             }
-            .model-option:active, .gpu-chip:active {
-                background: rgba(255, 255, 255, 0.08);
-                transform: scale(0.98);
-            }
             .calculate-btn:active {
                 transform: scale(0.98);
             }
@@ -440,7 +440,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>大模型显存估算<span class="version">v1.1</span></h1>
+        <h1>大模型显存估算<span class="version">v1.2</span></h1>
         <p>model-vram-calc · 显存占用 · KV Cache · 并发能力</p>
     </div>
 
