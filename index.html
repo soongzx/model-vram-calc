@@ -33,10 +33,25 @@
             padding: 32px 28px 24px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
         }
         .header h1 {
             font-size: 22px; font-weight: 700; color: #f0f0f4; margin-bottom: 6px;
             letter-spacing: 1px;
+            display: inline-block;
+        }
+        .header .version {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25));
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #a5b4fc;
+            letter-spacing: 0.5px;
         }
         .header p {
             font-size: 13px; color: rgba(255, 255, 255, 0.35);
@@ -233,6 +248,7 @@
             .container { border-radius: 14px; }
             .header { padding: 20px 16px 16px; }
             .header h1 { font-size: 18px; }
+            .header .version { font-size: 11px; padding: 2px 6px; }
             .header p { font-size: 11px; }
             .content { padding: 16px; }
             .section { margin-bottom: 20px; }
@@ -259,6 +275,7 @@
             .container { border-radius: 10px; }
             .header { padding: 16px 12px 12px; }
             .header h1 { font-size: 16px; letter-spacing: 0.5px; }
+            .header .version { font-size: 10px; padding: 1px 5px; margin-left: 6px; }
             .header p { font-size: 10px; }
             .content { padding: 12px; }
             .section { margin-bottom: 16px; }
@@ -282,6 +299,7 @@
 
         @media (max-width: 374px) {
             .header h1 { font-size: 15px; }
+            .header .version { font-size: 9px; padding: 1px 4px; margin-left: 4px; }
             .result-value { font-size: 18px; }
             .gpu-grid { grid-template-columns: 1fr; }
         }
@@ -304,7 +322,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>大模型显存估算</h1>
+        <h1>大模型显存估算<span class="version">v0.8</span></h1>
         <p>model-vram-calc · 显存占用 · KV Cache · 并发能力</p>
     </div>
 
