@@ -113,7 +113,11 @@
             grid-template-columns: 1fr 1fr 1fr;
         }
         .form-row.four {
-            grid-template-columns: 1fr 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .form-row.four .form-group {
+            min-width: 180px;
         }
 
         .form-group { margin-bottom: 12px; }
@@ -243,6 +247,14 @@
         .gpu-chip .gpu-name { color: rgba(255, 255, 255, 0.6); }
         .gpu-chip .gpu-mem  { font-size: 11px; color: rgba(255, 255, 255, 0.25); margin-top: 2px; }
 
+        /* ===== PC 窄窗口适配（确保架构参数输入宽度不小于 400px）===== */
+        @media (min-width: 769px) and (max-width: 960px) {
+            .form-row.four { grid-template-columns: 1fr 1fr; gap: 16px; }
+        }
+        @media (min-width: 769px) and (max-width: 700px) {
+            .form-row.four { grid-template-columns: 1fr; gap: 12px; }
+        }
+
         /* ===== 平板适配 (768px) ===== */
         @media (max-width: 768px) {
             body { padding: 12px; }
@@ -264,13 +276,13 @@
 
             /* 模型卡片双列 */
             .model-card { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .model-option { padding: 12px 10px; }
+            .model-option { padding: 12px 10px; border-color: rgba(255, 255, 255, 0.15); }
             .model-option .model-name { font-size: 13px; }
             .model-option .model-meta { font-size: 11px; }
 
             /* GPU 选择网格 */
             .gpu-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
-            .gpu-chip { padding: 10px 8px; font-size: 12px; }
+            .gpu-chip { padding: 10px 8px; font-size: 12px; border-color: rgba(255, 255, 255, 0.15); }
 
             /* 结果区域 */
             .results { padding: 16px; }
@@ -312,6 +324,7 @@
             .model-option {
                 padding: 14px 10px;
                 border-radius: 10px;
+                border-color: rgba(255, 255, 255, 0.15);
             }
             .model-option .model-name { font-size: 14px; margin-bottom: 4px; }
             .model-option .model-meta { font-size: 11px; }
@@ -331,6 +344,7 @@
                 font-size: 15px;
                 border-radius: 8px;
                 background: rgba(255, 255, 255, 0.05);
+                border-color: rgba(255, 255, 255, 0.15);
             }
             .param-note { font-size: 10px; margin-top: 3px; }
             .form-hint { font-size: 11px; margin-top: 6px; line-height: 1.5; }
@@ -341,6 +355,7 @@
                 padding: 12px 8px;
                 border-radius: 8px;
                 font-size: 13px;
+                border-color: rgba(255, 255, 255, 0.15);
             }
             .gpu-chip.selected {
                 background: rgba(99, 102, 241, 0.15) !important;
@@ -350,9 +365,9 @@
             .gpu-chip .gpu-mem { font-size: 11px; margin-top: 3px; }
 
             /* 结果区域 - 2x2 网格 */
-            .results { padding: 14px; border-radius: 10px; }
+            .results { padding: 14px; border-radius: 10px; border-color: rgba(255, 255, 255, 0.1); }
             .results-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
-            .result-card { padding: 12px 8px; border-radius: 8px; }
+            .result-card { padding: 12px 8px; border-radius: 8px; border-color: rgba(255, 255, 255, 0.1); }
             .result-value { font-size: 22px; }
             .result-unit { font-size: 12px; }
             .result-label { font-size: 11px; margin-top: 3px; }
@@ -368,7 +383,7 @@
             }
 
             /* 信息框 */
-            .info-box { padding: 12px 14px; font-size: 12px; border-radius: 8px; line-height: 1.7; }
+            .info-box { padding: 12px 14px; font-size: 12px; border-radius: 8px; line-height: 1.7; border-color: rgba(255, 255, 255, 0.1); }
             .info-box ul { margin-left: 16px; }
             .info-box li { margin-bottom: 5px; }
 
@@ -425,7 +440,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>大模型显存估算<span class="version">v1.0</span></h1>
+        <h1>大模型显存估算<span class="version">v1.1</span></h1>
         <p>model-vram-calc · 显存占用 · KV Cache · 并发能力</p>
     </div>
 
