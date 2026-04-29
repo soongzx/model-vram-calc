@@ -228,12 +228,76 @@
         .gpu-chip .gpu-name { color: rgba(255, 255, 255, 0.6); }
         .gpu-chip .gpu-mem  { font-size: 11px; color: rgba(255, 255, 255, 0.25); margin-top: 2px; }
 
-        @media (max-width: 640px) {
-            body { padding: 12px; }
+        @media (max-width: 768px) {
+            body { padding: 8px; }
+            .container { border-radius: 14px; }
+            .header { padding: 20px 16px 16px; }
+            .header h1 { font-size: 18px; }
+            .header p { font-size: 11px; }
             .content { padding: 16px; }
-            .form-row, .form-row.three, .form-row.four { grid-template-columns: 1fr; }
-            .results-grid { grid-template-columns: 1fr 1fr; }
-            .model-card { grid-template-columns: 1fr 1fr; }
+            .section { margin-bottom: 20px; }
+            .section-title { font-size: 10px; margin-bottom: 10px; }
+            .form-row, .form-row.three, .form-row.four { grid-template-columns: 1fr; gap: 0; }
+            .form-group { margin-bottom: 10px; }
+            .form-group input, .form-group select { padding: 10px 12px; font-size: 16px; }
+            .results-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .result-card { padding: 12px 8px; }
+            .result-value { font-size: 22px; }
+            .model-card { grid-template-columns: 1fr 1fr; gap: 6px; }
+            .model-option { padding: 10px 8px; }
+            .model-option .model-name { font-size: 12px; }
+            .model-option .model-meta { font-size: 10px; }
+            .gpu-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 6px; }
+            .gpu-chip { padding: 8px 6px; font-size: 11px; }
+            .calculate-btn { padding: 12px; font-size: 14px; }
+            .info-box { padding: 12px 14px; font-size: 11px; }
+            .info-box ul { margin-left: 14px; }
+        }
+
+        @media (max-width: 430px) {
+            body { padding: 4px; }
+            .container { border-radius: 10px; }
+            .header { padding: 16px 12px 12px; }
+            .header h1 { font-size: 16px; letter-spacing: 0.5px; }
+            .header p { font-size: 10px; }
+            .content { padding: 12px; }
+            .section { margin-bottom: 16px; }
+            .section-title { font-size: 9px; letter-spacing: 1px; margin-bottom: 8px; }
+            .model-card { grid-template-columns: 1fr; gap: 6px; }
+            .model-option { padding: 12px 10px; border-radius: 8px; }
+            .model-option .model-name { font-size: 13px; margin-bottom: 4px; }
+            .form-group { margin-bottom: 8px; }
+            .form-group label { font-size: 11px; margin-bottom: 4px; }
+            .form-group input, .form-group select { padding: 10px; font-size: 16px; border-radius: 6px; }
+            .gpu-grid { grid-template-columns: 1fr 1fr; gap: 4px; }
+            .gpu-chip { padding: 8px; border-radius: 6px; }
+            .gpu-chip .gpu-name { font-size: 11px; }
+            .results-grid { grid-template-columns: 1fr; gap: 6px; }
+            .result-card { padding: 10px; border-radius: 8px; }
+            .result-value { font-size: 20px; }
+            .result-label { font-size: 10px; }
+            .calculate-btn { padding: 12px; border-radius: 8px; font-size: 14px; }
+            .info-box { padding: 10px 12px; font-size: 10px; border-radius: 6px; }
+        }
+
+        @media (max-width: 374px) {
+            .header h1 { font-size: 15px; }
+            .result-value { font-size: 18px; }
+            .gpu-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .model-option:hover, .gpu-chip:hover {
+                background: rgba(255, 255, 255, 0.03);
+                border-color: rgba(255, 255, 255, 0.06);
+            }
+            .model-option:active, .gpu-chip:active {
+                background: rgba(255, 255, 255, 0.08);
+                transform: scale(0.98);
+            }
+            .calculate-btn:active {
+                transform: scale(0.98);
+            }
         }
     </style>
 </head>
