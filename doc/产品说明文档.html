@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品说明文档 - 大模型显存估算系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+            background: #fff;
+            color: #333;
+            line-height: 1.8;
+            padding: 40px 60px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #111;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 32px;
+        }
+        .version {
+            display: inline-block;
+            font-size: 12px;
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        /* 目录 */
+        .toc {
+            border: 1px solid #ddd;
+            padding: 16px 24px;
+            margin-bottom: 36px;
+            page-break-inside: avoid;
+        }
+        .toc h2 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+        }
+        .toc ol {
+            list-style: none;
+            counter-reset: toc;
+            padding-left: 0;
+        }
+        .toc > li {
+            counter-increment: toc;
+            margin-bottom: 6px;
+        }
+        .toc > li::before {
+            content: counter(toc) ". ";
+            font-weight: 600;
+            color: #333;
+        }
+        .toc a {
+            color: #333;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .toc a:hover { text-decoration: underline; }
+        .toc li > ol {
+            margin-top: 4px;
+            margin-left: 20px;
+            counter-reset: sub;
+        }
+        .toc li > ol > li {
+            counter-increment: sub;
+            margin-bottom: 3px;
+        }
+        .toc li > ol > li::before {
+            content: counter(toc) "." counter(sub) " ";
+            font-weight: 400;
+            font-size: 12px;
+        }
+
+        /* 章节 */
+        .section {
+            margin-bottom: 36px;
+            page-break-inside: avoid;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111;
+            margin-bottom: 16px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #eee;
+        }
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin: 24px 0 10px;
+        }
+
+        p {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        ul, ol {
+            font-size: 14px;
+            margin-left: 24px;
+            margin-bottom: 10px;
+        }
+        li { margin-bottom: 4px; }
+
+        /* 表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        th, td {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        /* 代码 */
+        code {
+            background: #f0f0f0;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 12px;
+            color: #333;
+        }
+        pre {
+            background: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 14px 18px;
+            font-family: Consolas, "Courier New", monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+
+        /* 提示框 */
+        .note, .tip {
+            border-left: 3px solid #6366f1;
+            padding: 10px 14px;
+            margin: 12px 0;
+            font-size: 13px;
+            color: #555;
+            background: #f8f9ff;
+        }
+        .tip {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        /* 步骤 */
+        .step-list {
+            list-style: none;
+            margin-left: 0;
+            counter-reset: step;
+            padding: 0;
+        }
+        .step-list > li {
+            counter-increment: step;
+            padding: 8px 12px 8px 40px;
+            margin-bottom: 6px;
+            position: relative;
+            font-size: 14px;
+        }
+        .step-list > li::before {
+            content: counter(step) ".";
+            position: absolute;
+            left: 12px;
+            font-weight: 600;
+            color: #6366f1;
+        }
+
+        footer {
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 12px;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>产品说明文档 <span class="version">v1.6</span></h1>
+    <div class="subtitle">大模型显存估算系统 · model-vram-calc</div>
+
+    <!-- 目录 -->
+    <div class="toc">
+        <h2>目 录</h2>
+        <ol>
+            <li><a href="#overview">文档概述</a></li>
+            <li><a href="#user-guide">用户使用说明</a>
+                <ol>
+                    <li><a href="#ug-install">安装与启动</a></li>
+                    <li><a href="#ug-model">选择模型</a></li>
+                    <li><a href="#ug-params">配置参数</a></li>
+                    <li><a href="#ug-gpu">GPU 配置</a></li>
+                    <li><a href="#ug-results">查看结果</a></li>
+                    <li><a href="#ug-faq">常见问题</a></li>
+                </ol>
+            </li>
+            <li><a href="#deploy">系统部署说明</a>
+                <ol>
+                    <li><a href="#dp-download">获取软件</a></li>
+                    <li><a href="#dp-local">本地部署</a></li>
+                    <li><a href="#dp-server">服务器部署</a></li>
+                    <li><a href="#dp-ci">CI/CD 自动发布</a></li>
+                </ol>
+            </li>
+            <li><a href="#maintain">系统维护说明</a>
+                <ol>
+                    <li><a href="#mt-update">版本更新</a></li>
+                    <li><a href="#mt-data">数据维护</a></li>
+                    <li><a href="#mt-backup">备份与恢复</a></li>
+                    <li><a href="#mt-trouble">故障排查</a></li>
+                </ol>
+            </li>
+            <li><a href="#formula">计算方式说明</a>
+                <ol>
+                    <li><a href="#fm-weight">模型权重显存</a></li>
+                    <li><a href="#fm-kv">KV Cache 显存</a></li>
+                    <li><a href="#fm-overhead">推理开销</a></li>
+                    <li><a href="#fm-cluster">集群与并发计算</a></li>
+                </ol>
+            </li>
+            <li><a href="#whitepaper">系统技术白皮书</a>
+                <ol>
+                    <li><a href="#wp-arch">系统架构</a></li>
+                    <li><a href="#wp-design">设计决策</a></li>
+                    <li><a href="#wp-perf">性能与安全</a></li>
+                    <li><a href="#wp-roadmap">未来规划</a></li>
+                </ol>
+            </li>
+        </ol>
+    </div>
+
+    <!-- 1. 文档概述 -->
+    <div class="section" id="overview">
+        <h2>1. 文档概述</h2>
+        <p>本文档是 <strong>model-vram-calc</strong> 大模型显存估算系统的完整产品说明文档，面向最终用户、运维人员和技术评估人员编写。文档涵盖产品使用、部署流程、维护指南、计算原理及技术架构五个方面。</p>
+        <p>本系统为纯前端静态 Web 应用，无需服务器、数据库或任何后端服务，浏览器直接打开即可运行。</p>
+    </div>
+
+    <!-- 2. 用户使用说明 -->
+    <div class="section" id="user-guide">
+        <h2>2. 用户使用说明</h2>
+
+        <h3 id="ug-install">2.1 安装与启动</h3>
+        <ol class="step-list">
+            <li>从 GitHub Release 页面下载最新版本的 <code>model-vram-calc.zip</code></li>
+            <li>解压 ZIP 文件到本地任意目录</li>
+            <li>双击 <code>index.html</code> 文件，系统将在默认浏览器中打开</li>
+        </ol>
+        <div class="tip">系统无需安装，解压即用。支持离线运行，不依赖网络连接。</div>
+
+        <h3 id="ug-model">2.2 选择模型</h3>
+        <p>页面顶部提供 12 种主流大模型预设卡片，点击任意卡片即可自动填充该模型的全部参数：</p>
+        <ul>
+            <li><strong>DeepSeek 系列</strong>：V4-Pro、V4-Flash、V3.2、V3.1、V3、R1</li>
+            <li><strong>GLM 系列</strong>：GLM-5、GLM-5.1</li>
+            <li><strong>Qwen 系列</strong>：Qwen3.6 35B-A3B、Qwen3 235B、Qwen3.5 235B</li>
+            <li><strong>Minimax</strong>：M2.7</li>
+        </ul>
+        <p>选择预设模型后，模型大小、隐藏层维度、层数、Q heads、KV heads 和最大上下文长度将自动填入。</p>
+
+        <h3 id="ug-params">2.3 配置参数</h3>
+        <p>用户可根据需要调整以下参数：</p>
+        <table>
+            <thead><tr><th>参数</th><th>说明</th><th>可选项</th></tr></thead>
+            <tbody>
+                <tr><td>模型大小 (GB · FP16)</td><td>FP16 精度下的模型权重大小</td><td>任意正整数</td></tr>
+                <tr><td>量化方式</td><td>权重量化精度</td><td>FP16 / BF16 / FP8 / INT8 / FP4 / INT4</td></tr>
+                <tr><td>Hidden Dim</td><td>隐藏层维度（embed 维度）</td><td>任意正整数</td></tr>
+                <tr><td>Layers</td><td>Transformer 层数</td><td>任意正整数</td></tr>
+                <tr><td>Q Heads</td><td>注意力头数</td><td>任意正整数</td></tr>
+                <tr><td>KV Heads</td><td>GQA KV 头数</td><td>任意正整数</td></tr>
+                <tr><td>上下文长度</td><td>输入 + 输出 token 总数</td><td>16K / 32K / 64K / 128K / 200K / 320K / 1M</td></tr>
+                <tr><td>KV Cache 格式</td><td>KV Cache 精度</td><td>FP16 / FP8 / INT4-FP4</td></tr>
+            </tbody>
+        </table>
+
+        <h3 id="ug-gpu">2.4 GPU 配置</h3>
+        <p>提供 7 种 GPU 预设芯片，点击即可自动设置单卡显存：</p>
+        <ul>
+            <li><strong>NVIDIA 数据中心</strong>：H200 141G、H20 141G、B200 192G</li>
+            <li><strong>NVIDIA 消费级</strong>：RTX 5090、RTX 4090</li>
+            <li><strong>阿里 PPU</strong>：A710E、真武 810E</li>
+        </ul>
+        <p>除预设外，用户可手动调整 GPU 数量、系统预留显存和推理开销比例。</p>
+
+        <h3 id="ug-results">2.5 查看结果</h3>
+        <p>点击「重新计算」按钮后，结果区域将展示 6 项核心指标：</p>
+        <ul>
+            <li><strong>模型权重显存</strong> — 量化后权重占用的显存（GB）</li>
+            <li><strong>KV Cache / Session</strong> — 单个并发 session 的 KV Cache 显存</li>
+            <li><strong>单 Session 总显存</strong> — 权重 + KV Cache + 推理开销</li>
+            <li><strong>最大并发 Session</strong> — 集群支持的最大并发数</li>
+            <li><strong>集群总显存</strong> — GPU 数量 × 单卡显存</li>
+            <li><strong>最少 GPU 数量</strong> — 加载权重所需的最少 GPU 卡数</li>
+        </ul>
+        <p>底部「计算明细」区域提供完整的公式推导过程，右侧附带微信赞赏码（点击可放大查看）。</p>
+
+        <h3 id="ug-faq">2.6 常见问题</h3>
+        <p><strong>Q：页面打不开怎么办？</strong><br>A：请确保使用现代浏览器（Chrome 90+、Edge 90+、Safari 14+、Firefox 88+），检查是否已解压 ZIP 文件后再打开。</p>
+        <p><strong>Q：计算结果准确吗？</strong><br>A：本工具基于业界通用的显存估算公式，计算结果可作为部署前的参考预估值，实际显存占用可能因推理框架实现细节略有差异。</p>
+        <p><strong>Q：如何获取最新模型参数？</strong><br>A：模型预设参数来源于官方技术报告，如需最新数据，请参考模型官方文档。</p>
+    </div>
+
+    <!-- 3. 系统部署说明 -->
+    <div class="section" id="deploy">
+        <h2>3. 系统部署说明</h2>
+
+        <h3 id="dp-download">3.1 获取软件</h3>
+        <p>通过以下两种方式获取软件：</p>
+        <ul>
+            <li><strong>Release ZIP</strong> — 访问 GitHub Releases 页面，下载 <code>model-vram-calc.zip</code>（仅包含运行必须的文件）</li>
+            <li><strong>源码克隆</strong> — <code>git clone https://github.com/soongzx/model-vram-calc.git</code></li>
+        </ul>
+
+        <h3 id="dp-local">3.2 本地部署</h3>
+        <ol class="step-list">
+            <li>将 <code>model-vram-calc.zip</code> 解压到目标目录</li>
+            <li>双击 <code>index.html</code> 即可使用</li>
+        </ol>
+        <p>目录结构如下：</p>
+        <pre>
+model-vram-calc/
+├── index.html          # 主程序入口
+├── vram_calc.html      # 计算公式说明页
+└── donate/
+    ├── about.html      # 关于页面
+    └── 503160023536.jpg  # 微信赞赏码
+        </pre>
+
+        <h3 id="dp-server">3.3 服务器部署</h3>
+        <p>如需部署为 Web 服务供团队访问，可使用任意静态文件服务器：</p>
+        <pre>
+# Python
+python3 -m http.server 8000
+
+# Node.js (npx)
+npx serve . -p 8000
+
+# Nginx
+server {
+    listen 80;
+    root /path/to/model-vram-calc;
+    index index.html;
+}
+        </pre>
+
+        <h3 id="dp-ci">3.4 CI/CD 自动发布</h3>
+        <p>项目内置 GitHub Actions 工作流（<code>.github/workflows/release.yml</code>），每次推送到 <code>main</code> 分支时自动：</p>
+        <ol>
+            <li>从 <code>index.html</code> 提取版本号</li>
+            <li>打包运行必须的文件为 ZIP</li>
+            <li>创建 GitHub Release 并上传 ZIP 包</li>
+        </ol>
+    </div>
+
+    <!-- 4. 系统维护说明 -->
+    <div class="section" id="maintain">
+        <h2>4. 系统维护说明</h2>
+
+        <h3 id="mt-update">4.1 版本更新</h3>
+        <p>系统采用语义化版本号（如 v1.6），版本号存储在 <code>index.html</code> 的 <code>&lt;span class="version"&gt;</code> 元素中。更新版本时需同步修改：</p>
+        <ul>
+            <li><code>index.html</code> 中的 <code>class="version"</code></li>
+            <li>本文档中的版本号</li>
+        </ul>
+        <div class="tip">每次版本更新后，GitHub Actions 将自动创建对应的 Release。</div>
+
+        <h3 id="mt-data">4.2 数据维护</h3>
+        <p>模型预设和 GPU 预设数据分别存储在 <code>index.html</code> 的 <code>models</code> 和 <code>gpuPresets</code> 常量中。新增模型时需提供以下字段：</p>
+        <table>
+            <thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td><code>name</code></td><td>string</td><td>模型名称</td></tr>
+                <tr><td><code>params</code></td><td>string</td><td>参数量描述（如 "671B MoE 37B active"）</td></tr>
+                <tr><td><code>size</code></td><td>number</td><td>FP16 大小（GB）</td></tr>
+                <tr><td><code>h</code></td><td>number</td><td>Hidden Dim</td></tr>
+                <tr><td><code>layers</code></td><td>number</td><td>层数</td></tr>
+                <tr><td><code>attnHeads</code></td><td>number</td><td>Q heads 数</td></tr>
+                <tr><td><code>kvHeads</code></td><td>number</td><td>KV heads 数</td></tr>
+                <tr><td><code>maxCtx</code></td><td>number</td><td>最大上下文 token 数</td></tr>
+            </tbody>
+        </table>
+
+        <h3 id="mt-backup">4.3 备份与恢复</h3>
+        <p>系统为纯静态文件，备份只需复制整个目录即可，无需数据库备份。恢复时直接替换文件即可。</p>
+
+        <h3 id="mt-trouble">4.4 故障排查</h3>
+        <table>
+            <thead><tr><th>问题</th><th>原因</th><th>解决方案</th></tr></thead>
+            <tbody>
+                <tr><td>页面空白</td><td>浏览器不支持 ES6+</td><td>升级浏览器至 Chrome 90+ 等现代浏览器</td></tr>
+                <tr><td>计算结果异常</td><td>参数填写不完整或非数字</td><td>检查必填项是否完整</td></tr>
+                <tr><td>打赏码无法放大</td><td>图片路径错误</td><td>确认 <code>donate/</code> 目录与 <code>index.html</code> 同级</td></tr>
+                <tr><td>页面样式错乱</td><td>CSS 文件未加载</td><td>确认为单文件架构，无需额外 CSS 文件</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 5. 计算方式说明 -->
+    <div class="section" id="formula">
+        <h2>5. 计算方式说明</h2>
+
+        <h3 id="fm-weight">5.1 模型权重显存</h3>
+        <pre>权重显存(GB) = FP16 模型大小(GB) × 量化压缩比</pre>
+        <table>
+            <thead><tr><th>量化方式</th><th>bytes/参数</th><th>压缩比</th></tr></thead>
+            <tbody>
+                <tr><td>FP16 / BF16</td><td>2</td><td>1</td></tr>
+                <tr><td>FP8 / INT8</td><td>1</td><td>0.5</td></tr>
+                <tr><td>FP4 / INT4</td><td>0.5</td><td>0.25</td></tr>
+            </tbody>
+        </table>
+
+        <h3 id="fm-kv">5.2 KV Cache 显存</h3>
+        <pre>KV Cache(GB) = 2 × numLayers × (hiddenDim × kvHeads/attnHeads) × contextLen × bytesPerElem / 1e9</pre>
+        <div class="note">其中 <code>kvHeads / attnHeads</code> 为 GQA KV 头比例。非 GQA 模型（MHA）中 <code>kvHeads = attnHeads</code>，比例为 1。</div>
+        <table>
+            <thead><tr><th>格式</th><th>bytes/elem</th><th>说明</th></tr></thead>
+            <tbody>
+                <tr><td>FP16</td><td>2</td><td>传统默认，无损</td></tr>
+                <tr><td>FP8</td><td>1</td><td>vLLM/SGLang 主流</td></tr>
+                <tr><td>INT4/FP4</td><td>0.5</td><td>4-bit 量化，相对 FP8 再减半</td></tr>
+            </tbody>
+        </table>
+
+        <h3 id="fm-overhead">5.3 推理开销</h3>
+        <pre>开销(GB) = 权重显存(GB) × 开销比例</pre>
+        <table>
+            <thead><tr><th>场景</th><th>建议比例</th></tr></thead>
+            <tbody>
+                <tr><td>高度优化（vLLM PagedAttention）</td><td>8%</td></tr>
+                <tr><td>vLLM 默认</td><td>12%</td></tr>
+                <tr><td>SGLang</td><td>15%</td></tr>
+                <tr><td>保守估计</td><td>20%</td></tr>
+            </tbody>
+        </table>
+
+        <h3 id="fm-cluster">5.4 集群与并发计算</h3>
+        <pre>
+集群总显存(GB) = 单卡显存 × GPU 数量
+可用显存(GB)   = 集群总显存 - 系统预留
+最少 GPU 数    = ceil((权重显存 + 预留) / 单卡显存)
+最大并发       = floor((可用显存 - 权重显存) / (KV Cache + 开销))
+        </pre>
+        <div class="tip">权重只加载一份，所有 session 共享。并发容量取决于剩余显存能容纳多少份独立的 KV Cache + 推理开销。</div>
+    </div>
+
+    <!-- 6. 系统技术白皮书 -->
+    <div class="section" id="whitepaper">
+        <h2>6. 系统技术白皮书</h2>
+
+        <h3 id="wp-arch">6.1 系统架构</h3>
+        <p>model-vram-calc 采用极简的单页应用（SPA）架构，所有代码集中在一个 HTML 文件中，无任何外部依赖。</p>
+        <pre>
+┌─────────────────────────────────────────┐
+│           index.html (主程序)            │
+│  ┌─────────┬─────────┬──────────────┐  │
+│  │ HTML    │ CSS     │ JavaScript   │  │
+│  │ 结构层  │ 样式层  │ 逻辑层       │  │
+│  └─────────┴─────────┴──────────────┘  │
+└─────────────────────────────────────────┘
+┌──────────────────┐    ┌───────────────┐
+│ vram_calc.html   │    │ donate/       │
+│ 计算公式说明     │    │ about.html    │
+│                  │    │ 503160....jpg │
+└──────────────────┘    └───────────────┘
+        </pre>
+
+        <h3 id="wp-design">6.2 设计决策</h3>
+        <ul>
+            <li><strong>单文件架构</strong> — 避免多文件依赖，降低分发复杂度，确保离线可用</li>
+            <li><strong>无构建步骤</strong> — 无需 Webpack/Vite 等工具，编辑后即可生效</li>
+            <li><strong>原生 JavaScript</strong> — 不引入 React/Vue 等框架，减少体积和加载时间</li>
+            <li><strong>CSS 变量与响应式</strong> — 通过 4 个断点覆盖桌面、平板、手机全终端</li>
+            <li><strong>暗色主题</strong> — 面向开发者用户，采用玻璃拟态（glassmorphism）风格</li>
+        </ul>
+
+        <h3 id="wp-perf">6.3 性能与安全</h3>
+        <p><strong>性能</strong>：页面体积约 25KB（gzip 后更小），首屏加载时间 &lt; 100ms。计算逻辑为纯 CPU 运算，响应时间 &lt; 10ms。无任何网络请求，不存在首屏阻塞。</p>
+        <p><strong>安全</strong>：纯客户端应用，不收集、不传输任何用户数据。无 Cookie、无追踪代码、无第三方脚本。所有计算在本地浏览器中完成。</p>
+
+        <h3 id="wp-roadmap">6.4 未来规划</h3>
+        <ul>
+            <li>支持更多模型预设（如 Llama、Mistral、Command R 等）</li>
+            <li>增加 MoE 激活专家数与实际显存的精确映射</li>
+            <li>支持自定义 KV Cache 量化精度</li>
+            <li>增加多模型对比模式（并排显示多个模型的显存占用）</li>
+            <li>提供 API 模式供其他工具调用计算接口</li>
+        </ul>
+    </div>
+
+    <footer>
+        <p>© 2026 大模型显存估算系统 · model-vram-calc · 产品说明文档 v1.6</p>
+    </footer>
+
+</body>
+</html>

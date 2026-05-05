@@ -11,10 +11,18 @@ model-vram-calc — 在线估算大模型显存占用、KV Cache 与集群并发
 
 ## 快速开始
 
-直接在浏览器中打开 `index.html` 即可使用。
+1. **下载** — 点击仓库右上角的 **Code** 按钮，选择 **Download ZIP** 下载压缩包。
+2. **解压** — 将下载的 ZIP 文件解压到本地任意目录。
+3. **打开** — 进入解压后的文件夹，双击 `index.html` 即可在浏览器中运行。
+
+> 也可直接克隆仓库后打开：
 
 ```bash
-open index.html
+git clone https://github.com/soongzx/model-vram-calc.git
+cd model-vram-calc
+open index.html        # macOS
+start index.html       # Windows
+xdg-open index.html    # Linux
 ```
 
 ## 界面预览
