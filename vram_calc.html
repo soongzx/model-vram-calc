@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大模型显存估算系统 — 计算公式</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0f;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(66, 133, 244, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+            min-height: 100vh;
+            padding: 24px;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(20, 20, 28, 0.85);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 32px 28px 24px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .header h1 {
+            font-size: 22px; font-weight: 700; color: #f0f0f4; margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .header p {
+            font-size: 13px; color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 0.5px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 12px;
+            color: rgba(99, 102, 241, 0.7);
+            text-decoration: none;
+            padding: 4px 12px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .back-link:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .content { padding: 28px; }
+
+        .section { margin-bottom: 32px; }
+        .section:last-child { margin-bottom: 0; }
+
+        .section-title {
+            font-size: 16px; font-weight: 600; color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .section-title .num {
+            display: inline-block;
+            width: 24px; height: 24px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+            border-radius: 6px;
+            text-align: center; line-height: 24px;
+            font-size: 12px; font-weight: 700; color: #a5b4fc;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .formula-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 16px 20px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 16px;
+            overflow-x: auto;
+        }
+
+        .desc {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.45);
+            line-height: 1.7;
+            margin-bottom: 16px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 10px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.7);
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+        td code, p code, .desc code {
+            background: rgba(255, 255, 255, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 12px;
+            color: rgba(165, 180, 252, 0.9);
+        }
+
+        .note {
+            background: rgba(99, 102, 241, 0.08);
+            border-left: 3px solid rgba(99, 102, 241, 0.4);
+            border-radius: 0 8px 8px 0;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.7;
+            margin-top: 12px;
+        }
+
+        .example-box {
+            background: rgba(52, 211, 153, 0.06);
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 12px;
+        }
+        .example-box .label {
+            font-size: 11px;
+            font-weight: 600;
+            color: rgba(52, 211, 153, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .example-box .formula-box {
+            margin-bottom: 0;
+            background: transparent;
+            border: none;
+            padding: 0;
+        }
+
+        .sub-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 20px 0 12px;
+        }
+
+        /* ===== 平板适配 (768px) ===== */
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .container { border-radius: 16px; }
+            .header { padding: 24px 20px 18px; }
+            .header h1 { font-size: 20px; }
+            .header p { font-size: 12px; }
+            .content { padding: 20px; }
+
+            .section-title { font-size: 15px; }
+            .formula-box { font-size: 13px; padding: 14px 16px; }
+
+            table { font-size: 12px; }
+            th, td { padding: 8px 10px; }
+        }
+
+        /* ===== 手机适配 (480px) ===== */
+        @media (max-width: 480px) {
+            body { padding: 8px; }
+            .container { border-radius: 12px; }
+            .header { padding: 20px 16px 16px; }
+            .header h1 { font-size: 18px; letter-spacing: 0.5px; }
+            .header p { font-size: 11px; margin-top: 6px; }
+            .content { padding: 16px; }
+
+            .section { margin-bottom: 24px; }
+            .section-title { font-size: 14px; margin-bottom: 12px; }
+
+            .formula-box { font-size: 12px; padding: 12px 14px; overflow-x: auto; }
+
+            table { font-size: 11px; display: block; overflow-x: auto; }
+            th, td { padding: 8px; white-space: nowrap; }
+
+            .desc { font-size: 12px; }
+            .note { font-size: 11px; padding: 10px 14px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>计算公式说明</h1>
+        <p>大模型显存估算系统 · VRAM Calculation Formulas</p>
+        <a href="index.html" class="back-link">← 返回计算器</a>
+    </div>
+
+    <div class="content">
+
+        <!-- 总公式 -->
+        <div class="section">
+            <div class="section-title">总显存公式</div>
+            <div class="formula-box">总显存 = 模型权重 + KV Cache + 推理开销</div>
+        </div>
+
+        <!-- 1. 模型权重显存 -->
+        <div class="section">
+            <div class="section-title"><span class="num">1</span>模型权重显存</div>
+            <div class="formula-box">权重显存(GB) = FP16模型大小(GB) × 量化压缩比</div>
+
+            <table>
+                <thead>
+                    <tr><th>量化方式</th><th>bytes/参数</th><th>压缩比</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>FP16</code></td><td>2</td><td>1</td></tr>
+                    <tr><td><code>BF16</code></td><td>2</td><td>1</td></tr>
+                    <tr><td><code>FP8</code></td><td>1</td><td>0.5</td></tr>
+                    <tr><td><code>INT8</code></td><td>1</td><td>0.5</td></tr>
+                    <tr><td><code>FP4</code></td><td>0.5</td><td>0.25</td></tr>
+                    <tr><td><code>INT4</code></td><td>0.5</td><td>0.25</td></tr>
+                </tbody>
+            </table>
+
+            <p class="desc">模型预设的 size 值均为 FP16 精度下的估算大小（参数 × 2 bytes）。选择量化后自动乘以对应压缩比。</p>
+
+            <div class="note">
+                <code>FP4</code> 为 4-bit 浮点量化，与 INT4 同级别（0.5 byte/param），但保留了浮点格式的动态范围优势，在部分推理场景中精度损失更小。
+            </div>
+        </div>
+
+        <!-- 2. KV Cache 显存 -->
+        <div class="section">
+            <div class="section-title"><span class="num">2</span>KV Cache 显存</div>
+            <p class="desc">每个 session 独立维护一份 KV Cache，大小取决于模型架构和上下文长度。</p>
+
+            <div class="sub-title">公式</div>
+            <div class="formula-box">KV Cache(GB) = 2 × numLayers × (hiddenDim × kvHeads/attnHeads) × contextLen × bytesPerElem / 1e9</div>
+
+            <div class="sub-title">参数说明</div>
+            <table>
+                <thead>
+                    <tr><th>参数</th><th>HF 配置名</th><th>含义</th><th>典型值（GLM-5.1）</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>2</code></td><td>—</td><td>K 和 V 各一份</td><td>—</td></tr>
+                    <tr><td><code>numLayers</code></td><td><code>num_hidden_layers</code></td><td>Transformer 层数</td><td>62</td></tr>
+                    <tr><td><code>hiddenDim</code></td><td><code>hidden_size</code></td><td>隐藏层维度</td><td>7168</td></tr>
+                    <tr><td><code>kvHeads / attnHeads</code></td><td><code>num_key_value_heads</code> / <code>num_attention_heads</code></td><td>GQA KV 头比例</td><td>8/64 = 0.125</td></tr>
+                    <tr><td><code>hiddenDim × kvRatio</code></td><td>—</td><td>KV 投影的实际维度</td><td>7168 × 0.125 = 896</td></tr>
+                    <tr><td><code>contextLen</code></td><td>—</td><td>输入 + 输出 token 总数</td><td>可选项：16K~1M</td></tr>
+                    <tr><td><code>bytesPerElem</code></td><td>—</td><td>FP16=2, FP8=1, INT4/FP4=0.5</td><td>2</td></tr>
+                </tbody>
+            </table>
+
+            <div class="sub-title">KV Cache 格式说明</div>
+            <table>
+                <thead>
+                    <tr><th>格式</th><th>bytes/elem</th><th>说明</th><th>适用硬件</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><code>FP16</code></td><td>2</td><td>传统默认，无损</td><td>所有 GPU</td></tr>
+                    <tr><td><code>FP8</code></td><td>1</td><td>当前主流（OCP E5M2/E4M3），vLLM/SGLang 默认</td><td>H100/H200/B200/H20 等</td></tr>
+                    <tr><td><code>INT4/FP4</code></td><td>0.5</td><td>量化 4-bit，相对 FP8 再减半显存</td><td>B200 (NVFP4) / 支持 MXFP4 硬件</td></tr>
+                </tbody>
+            </table>
+
+            <p class="desc">当前主流推理框架（vLLM、SGLang）默认使用 FP8 KV Cache，FP16 为传统基线。<br>
+            INT4/FP4（如 NVIDIA NVFP4、OCP MXFP4）是 2025-2026 年新兴标准，在 Blackwell 及更高端硬件上支持，可在精度损失 &lt;1% 的前提下将 KV Cache 显存再降低 50%。</p>
+
+            <div class="note">
+                非 GQA 模型（MHA）中 <code>kvHeads = attnHeads</code>，<code>kvRatio = 1</code>，KV Cache 将放大 8 倍。
+            </div>
+
+            <div class="example-box">
+                <div class="label">示例：GLM-5.1 FP16, 4K context</div>
+                <div class="formula-box">KV Cache = 2 × 62 × 896 × 4096 × 2 / 1e9 ≈ 0.91 GB/session</div>
+            </div>
+        </div>
+
+        <!-- 3. 推理开销 -->
+        <div class="section">
+            <div class="section-title"><span class="num">3</span>推理开销</div>
+            <p class="desc">包括激活值（activation memory）、临时 buffer、CUDA kernel 工作空间等。</p>
+            <div class="formula-box">开销(GB) = 权重显存(GB) × 开销比例</div>
+
+            <table>
+                <thead>
+                    <tr><th>场景</th><th>建议比例</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>高度优化（vLLM PagedAttention）</td><td>8%</td></tr>
+                    <tr><td>vLLM 默认</td><td>12%</td></tr>
+                    <tr><td>SGLang</td><td>15%</td></tr>
+                    <tr><td>保守估计</td><td>20%</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- 4. 单 Session 总显存 -->
+        <div class="section">
+            <div class="section-title"><span class="num">4</span>单 Session 总显存</div>
+            <div class="formula-box">单Session(GB) = 权重显存 + KV Cache + 推理开销</div>
+            <p class="desc">权重显存仅在加载时一次性占用，并发 session 共享权重，仅需额外分配 KV Cache + 开销。</p>
+        </div>
+
+        <!-- 5. 集群与并发计算 -->
+        <div class="section">
+            <div class="section-title"><span class="num">5</span>集群与并发计算</div>
+
+            <div class="sub-title">总显存</div>
+            <div class="formula-box">
+                集群总显存(GB) = 单卡显存 × GPU 数量<br>
+                可用显存(GB)   = 集群总显存 - 系统预留
+            </div>
+
+            <div class="sub-title">最少 GPU 数量</div>
+            <div class="formula-box">最少GPU数 = ceil((权重显存 + 预留) / 单卡显存)</div>
+            <p class="desc">模型权重必须能完整装入集群总显存（扣除预留），同时每张卡不超限。</p>
+
+            <div class="sub-title">最大并发 Session</div>
+            <div class="formula-box">最大并发 = floor((可用显存 - 权重显存) / (KV Cache + 开销))</div>
+            <p class="desc">权重只加载一份，所有 session 共享。剩余显存按每个 session 所需 KV Cache + 开销计算并发容量。</p>
+        </div>
+
+        <!-- 6. 模型预设数据 -->
+        <div class="section">
+            <div class="section-title"><span class="num">6</span>模型预设数据</div>
+            <table>
+                <thead>
+                    <tr><th>模型</th><th>FP16</th><th>hidden dim</th><th>layers</th><th>Q heads</th><th>KV heads</th><th>最大上下文</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>DeepSeek V4-Pro</td><td>3200 GB</td><td>7168</td><td>61</td><td>64</td><td>8</td><td>1M</td></tr>
+                    <tr><td>DeepSeek V4-Flash</td><td>568 GB</td><td>4096</td><td>43</td><td>32</td><td>8</td><td>1M</td></tr>
+                    <tr><td>DeepSeek V3.2</td><td>1342 GB</td><td>7168</td><td>67</td><td>64</td><td>8</td><td>128K</td></tr>
+                    <tr><td>DeepSeek V3.1</td><td>1342 GB</td><td>7168</td><td>67</td><td>64</td><td>8</td><td>128K</td></tr>
+                    <tr><td>DeepSeek V3</td><td>1342 GB</td><td>7168</td><td>67</td><td>64</td><td>8</td><td>128K</td></tr>
+                    <tr><td>DeepSeek R1</td><td>1320 GB</td><td>7168</td><td>67</td><td>64</td><td>8</td><td>128K</td></tr>
+                    <tr><td>GLM-5</td><td>1490 GB</td><td>7168</td><td>62</td><td>64</td><td>8</td><td>200K</td></tr>
+                    <tr><td>GLM-5.1</td><td>1488 GB</td><td>7168</td><td>62</td><td>64</td><td>8</td><td>200K</td></tr>
+                    <tr><td>Qwen3.6 35B-A3B</td><td>70 GB</td><td>3072</td><td>40</td><td>48</td><td>8</td><td>1M</td></tr>
+                    <tr><td>Qwen3 235B</td><td>470 GB</td><td>5120</td><td>60</td><td>64</td><td>8</td><td>128K</td></tr>
+                    <tr><td>Qwen3.5 235B</td><td>470 GB</td><td>5120</td><td>60</td><td>64</td><td>8</td><td>128K</td></tr>
+                    <tr><td>Minimax M2.7</td><td>460 GB</td><td>3072</td><td>62</td><td>48</td><td>8</td><td>200K</td></tr>
+                </tbody>
+            </table>
+            <p class="desc">DeepSeek V4 系列基于 2026 年 4 月发布的技术报告，采用满血万亿参数 MoE + 华为昇腾 CANN 算力。<br>
+            Qwen3.6 35B-A3B 是阿里 2026 年发布的 Agentic Coding 专用模型。</p>
+        </div>
+
+        <!-- 7. GPU 预设列表 -->
+        <div class="section">
+            <div class="section-title"><span class="num">7</span>GPU 预设列表</div>
+            <table>
+                <thead>
+                    <tr><th>GPU</th><th>显存</th><th>类型</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>H200 141G</td><td>141 GB</td><td>NVIDIA</td></tr>
+                    <tr><td>H20 141G</td><td>141 GB</td><td>NVIDIA (中国特供)</td></tr>
+                    <tr><td>B200 192G</td><td>192 GB</td><td>NVIDIA</td></tr>
+                    <tr><td>RTX 5090</td><td>32 GB</td><td>NVIDIA</td></tr>
+                    <tr><td>RTX 4090</td><td>24 GB</td><td>NVIDIA</td></tr>
+                    <tr><td>A710E</td><td>96 GB</td><td>阿里 PPU (HBM2e)</td></tr>
+                    <tr><td>真武810E</td><td>96 GB</td><td>阿里 PPU (HBM2e)</td></tr>
+                </tbody>
+            </table>
+            <p class="desc">A710E 与 真武810E 为阿里巴巴自研 PPU，采用 HBM2e 高带宽内存，单卡 96 GB。</p>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关于 - 大模型显存估算系统</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0f;
+            background-image:
+                radial-gradient(ellipse at 20% 50%, rgba(66, 133, 244, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+            min-height: 100vh;
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            background: rgba(20, 20, 28, 0.85);
+            backdrop-filter: blur(24px) saturate(1.2);
+            -webkit-backdrop-filter: blur(24px) saturate(1.2);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 32px 28px 24px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .header h1 {
+            font-size: 22px; font-weight: 700; color: #f0f0f4; margin-bottom: 6px;
+            letter-spacing: 1px;
+        }
+        .header .version {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25));
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #a5b4fc;
+            letter-spacing: 0.5px;
+        }
+        .header p {
+            font-size: 13px; color: rgba(255, 255, 255, 0.35);
+            letter-spacing: 0.5px;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 12px;
+            font-size: 12px;
+            color: rgba(99, 102, 241, 0.7);
+            text-decoration: none;
+            padding: 4px 12px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .back-link:hover {
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .content { padding: 28px; }
+
+        .section {
+            margin-bottom: 24px;
+        }
+        .section:last-child {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 11px; font-weight: 600; color: rgba(255, 255, 255, 0.25);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 12px;
+        }
+
+        .section p {
+            font-size: 13px;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .donate-section {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .donate-section p {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 16px;
+        }
+        .donate-section img {
+            max-width: 240px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        footer {
+            padding: 20px 28px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            text-align: center;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* ===== 手机适配 ===== */
+        @media (max-width: 480px) {
+            body { padding: 12px; }
+            .container { border-radius: 16px; }
+            .header { padding: 24px 20px 18px; }
+            .header h1 { font-size: 20px; }
+            .content { padding: 20px; }
+            .donate-section img { max-width: 200px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>关于<span class="version">v1.5</span></h1>
+        <p>大模型显存估算系统 · About</p>
+        <a href="../index.html" class="back-link">← 返回计算器</a>
+    </div>
+
+    <div class="content">
+
+        <div class="section">
+            <div class="section-title">项目简介</div>
+            <p>model-vram-calc 是一款面向 AI 工程师、算法研究员和运维人员的在线显存估算工具。它帮助您在部署大语言模型前，快速评估显存占用、KV Cache 大小以及集群并发能力。</p>
+            <p>工具内置 12 种主流模型预设（DeepSeek、GLM、Qwen、Minimax）和 7 种 GPU 配置（H200、B200、RTX 5090 等），支持 FP16/BF16/FP8/INT8/FP4/INT4 多种量化方案，开箱即用。</p>
+        </div>
+
+        <div class="section">
+            <div class="section-title">作者简介</div>
+            <p>我是 Soong，写此软件因工作中遇痛点，市面工具不佳，便业余时间开发，想"也许别人也需要"。后项目渐有用户，得世界各地反馈和 PR。看到有人说工具帮他节省时间，成就感满满。</p>
+            <p>我普通程序员，开源开发是副业也是热情所在，靠软件周边服务维持生活。开源不易，除写代码，还要处理文档、修复 Bug 等，均需时间精力，还有成本。</p>
+            <p>若软件对您有帮助，望打赏，将用于支付费用、提升软件质量、专注核心功能开发。金额多少都是鼓励。若不便打赏，点 Star 或推荐给朋友也是支持。谢谢，希望能继续为您提供好用的软件。</p>
+        </div>
+
+        <div class="section donate-section">
+            <div class="section-title" style="text-align:center;">支持作者</div>
+            <p>如果您觉得这个工具对您有帮助，欢迎赞赏支持持续开发和维护。</p>
+            <img src="503160023536.jpg" alt="微信赞赏码">
+        </div>
+
+    </div>
+
+    <footer>
+        <p>© 2026 大模型显存估算系统 · model-vram-calc</p>
+    </footer>
+</div>
+</body>
+</html>
