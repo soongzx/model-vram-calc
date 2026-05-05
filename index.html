@@ -258,7 +258,7 @@
         .result-footer {
             display: flex;
             gap: 16px;
-            align-items: flex-start;
+            align-items: stretch;
             margin-top: 14px;
         }
         .result-footer .info-box {
@@ -271,7 +271,12 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 14px 18px;
         }
         .result-footer .donate-box img {
             width: 140px;
@@ -559,7 +564,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>大模型显存估算系统<span class="version">v1.5</span></h1>
+        <h1>大模型显存估算系统<span class="version">v1.6</span></h1>
         <div class="subtitle">
             <span class="subtitle-text">model-vram-calc · 显存占用 · KV Cache · 并发能力</span>
             <span class="header-links"><a href="vram_calc.html">计算方式说明</a><a href="donate/about.html">关于</a></span>
