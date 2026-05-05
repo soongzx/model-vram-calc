@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create distribution package
+        run: |
+          mkdir dist
+          cp index.html dist/
+          cp vram_calc.html dist/
+          cp -r donate dist/
+          cd dist
+          zip -r ../model-vram-calc.zip .
+
+      - name: Get version from index.html
+        id: version
+        run: |
+          VER=$(grep -oP 'class="version">v\K[^<]+' index.html)
+          echo "version=$VER" >> $GITHUB_OUTPUT
+
+      - name: Check existing release
+        id: check
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          if gh release view "$TAG" &>/dev/null; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Delete existing release
+        if: steps.check.outputs.exists == 'true'
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          gh release delete "$TAG" --yes --cleanup-tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create release
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          gh release create "$TAG" model-vram-calc.zip \
+            --title "Release $TAG" \
+            --generate-notes \
+            --target main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
