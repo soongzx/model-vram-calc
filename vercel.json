@@ -1,5 +1,5 @@
 {
-  "buildCommand": "mkdir -p dist && cp index.html vram_calc.html donate -r dist/",
+  "buildCommand": "mkdir -p dist && cp index.html vram_calc.html dist/ && cp -r donate dist/",
   "outputDirectory": "dist",
   "installCommand": "echo 'No dependencies'"
 }
