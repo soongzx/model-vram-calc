@@ -228,6 +228,39 @@
             <div class="formula-box">总显存 = 模型权重 + KV Cache + 推理开销</div>
         </div>
 
+        <!-- 0. 估算模式 -->
+        <div class="section">
+            <div class="section-title"><span class="num">0</span>估算模式</div>
+            <p class="desc">系统提供两种估算模式，适用于不同的规划场景。</p>
+
+            <table>
+                <thead>
+                    <tr><th>项目</th><th>保守估算</th><th>乐观估算</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>推理开销</strong></td><td>≥15%（与用户设定的较大值）</td><td>≤8%（与用户设定的较小值）</td></tr>
+                    <tr><td><strong>单位换算</strong></td><td>1e9（十进制，约 7% 偏小）</td><td>1024³（二进制，精确 GiB）</td></tr>
+                    <tr><td><strong>对齐损耗</strong></td><td>+8%（PagedAttention block 对齐）</td><td>0%（理论值）</td></tr>
+                    <tr><td><strong>适用场景</strong></td><td>生产环境容量规划</td><td>理论上限参考</td></tr>
+                    <tr><td><strong>误差范围</strong></td><td>实际值可能高估 5-15%</td><td>实际值可能低估 10-25%</td></tr>
+                </tbody>
+            </table>
+
+            <div class="sub-title" style="margin-top: 16px;">模式差异详解</div>
+            <p class="desc"><strong>1. 推理开销比例差异</strong><br>
+            保守模式：vLLM/SGLang 实测中，激活值 + 临时 buffer + CUDA 工作空间通常占权重的 12-18%，保守设定 15% 下限<br>
+            乐观模式：高度优化的部署（vLLM PagedAttention）可将开销压缩至 6-10%，乐观设定 8% 上限</p>
+
+            <p class="desc"><strong>2. 单位换算差异</strong><br>
+            <code>1 GB = 1e9 bytes</code>（十进制，硬盘/网络常用）<br>
+            <code>1 GiB = 1024³ bytes</code>（二进制，内存/显存常用）<br>
+            差异率 ≈ 7.37%。保守模式使用 1e9，计算结果比实际 GiB 约小 7%；乐观模式使用 1024³，精确匹配显存单位。</p>
+
+            <p class="desc"><strong>3. 对齐损耗（保守模式特有）</strong><br>
+            vLLM 等框架使用 PagedAttention 管理 KV Cache，以 block 为单位分配（典型 block_size = 16 或 32 tokens）。由于 page 对齐和内存碎片，实际占用比理论值高约 5-10%。保守模式增加 8% 余量：<br>
+            <code>实际 KV Cache = 理论值 × 1.08</code></p>
+        </div>
+
         <!-- 1. 模型权重显存 -->
         <div class="section">
             <div class="section-title"><span class="num">1</span>模型权重显存</div>
@@ -317,7 +350,7 @@
                     <tr><td>高度优化（vLLM PagedAttention）</td><td>8%</td></tr>
                     <tr><td>vLLM 默认</td><td>12%</td></tr>
                     <tr><td>SGLang</td><td>15%</td></tr>
-                    <tr><td>保守估计</td><td>20%</td></tr>
+                    <tr><td>保守估算</td><td>20%</td></tr>
                 </tbody>
             </table>
         </div>
@@ -357,16 +390,16 @@
                 </thead>
                 <tbody>
                     <tr><td>DeepSeek V4-Pro</td><td>3200 GB</td><td>7168</td><td>61</td><td>64</td><td>8</td><td>1M</td></tr>
-                    <tr><td>DeepSeek V4-Flash</td><td>568 GB</td><td>4096</td><td>43</td><td>32</td><td>8</td><td>1M</td></tr>
+                    <tr><td>DeepSeek V4-Flash</td><td>568 GB</td><td>4096</td><td>43</td><td>64</td><td>1</td><td>1M</td></tr>
                     <tr><td>DeepSeek V3.2</td><td>1342 GB</td><td>7168</td><td>67</td><td>64</td><td>8</td><td>128K</td></tr>
                     <tr><td>DeepSeek V3.1</td><td>1342 GB</td><td>7168</td><td>67</td><td>64</td><td>8</td><td>128K</td></tr>
                     <tr><td>DeepSeek V3</td><td>1342 GB</td><td>7168</td><td>67</td><td>64</td><td>8</td><td>128K</td></tr>
                     <tr><td>DeepSeek R1</td><td>1320 GB</td><td>7168</td><td>67</td><td>64</td><td>8</td><td>128K</td></tr>
-                    <tr><td>GLM-5</td><td>1490 GB</td><td>7168</td><td>62</td><td>64</td><td>8</td><td>200K</td></tr>
-                    <tr><td>GLM-5.1</td><td>1488 GB</td><td>7168</td><td>62</td><td>64</td><td>8</td><td>200K</td></tr>
+                    <tr><td>GLM-5</td><td>1490 GB</td><td>6144</td><td>78</td><td>64</td><td>64</td><td>200K</td></tr>
+                    <tr><td>GLM-5.1</td><td>1488 GB</td><td>6144</td><td>78</td><td>64</td><td>64</td><td>200K</td></tr>
+                    <tr><td>Qwen3-235B (MoE)</td><td>470 GB</td><td>4096</td><td>94</td><td>64</td><td>4</td><td>128K</td></tr>
+                    <tr><td>Qwen3.5 397B</td><td>794 GB</td><td>4096</td><td>60</td><td>32</td><td>2</td><td>256K</td></tr>
                     <tr><td>Qwen3.6 35B-A3B</td><td>70 GB</td><td>3072</td><td>40</td><td>48</td><td>8</td><td>1M</td></tr>
-                    <tr><td>Qwen3 235B</td><td>470 GB</td><td>5120</td><td>60</td><td>64</td><td>8</td><td>128K</td></tr>
-                    <tr><td>Qwen3.5 235B</td><td>470 GB</td><td>5120</td><td>60</td><td>64</td><td>8</td><td>128K</td></tr>
                     <tr><td>Minimax M2.7</td><td>460 GB</td><td>3072</td><td>62</td><td>48</td><td>8</td><td>200K</td></tr>
                 </tbody>
             </table>
@@ -384,11 +417,13 @@
                 <tbody>
                     <tr><td>H200 141G</td><td>141 GB</td><td>NVIDIA</td></tr>
                     <tr><td>H20 141G</td><td>141 GB</td><td>NVIDIA (中国特供)</td></tr>
+                    <tr><td>H100 NVL 94G</td><td>94 GB</td><td>NVIDIA</td></tr>
+                    <tr><td>H100 80G</td><td>80 GB</td><td>NVIDIA</td></tr>
                     <tr><td>B200 192G</td><td>192 GB</td><td>NVIDIA</td></tr>
                     <tr><td>RTX 5090</td><td>32 GB</td><td>NVIDIA</td></tr>
                     <tr><td>RTX 4090</td><td>24 GB</td><td>NVIDIA</td></tr>
                     <tr><td>A710E</td><td>96 GB</td><td>阿里 PPU (HBM2e)</td></tr>
-                    <tr><td>真武810E</td><td>96 GB</td><td>阿里 PPU (HBM2e)</td></tr>
+                    <tr><td>真武 810E</td><td>96 GB</td><td>阿里 PPU (HBM2e)</td></tr>
                 </tbody>
             </table>
             <p class="desc">A710E 与 真武810E 为阿里巴巴自研 PPU，采用 HBM2e 高带宽内存，单卡 96 GB。</p>

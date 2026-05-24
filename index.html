@@ -238,11 +238,79 @@
             height: 6px; border-radius: 3px;
             background: rgba(255, 255, 255, 0.06); overflow: hidden;
         }
-        .prog-bar-fill {
-            height: 100%; border-radius: 3px;
-            background: linear-gradient(90deg, #34d399, #f59e0b, #ef4444);
-            transition: width .3s;
-        }
+.prog-bar-fill {
+    height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, #34d399, #f59e0b, #ef4444);
+    transition: width .3s;
+}
+
+.calc-progress {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 8px;
+}
+
+.calc-progress.show {
+    display: flex;
+}
+
+.calc-progress .spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(99, 102, 241, 0.3);
+    border-top-color: rgba(99, 102, 241, 0.8);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.calc-progress .spinner-text {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.zero-concurrency-alert {
+    display: none;
+    grid-column: 1 / -1;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-top: 14px;
+}
+
+.zero-concurrency-alert.show {
+    display: block;
+}
+
+.zero-concurrency-alert .alert-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ef4444;
+    margin-bottom: 8px;
+}
+
+.zero-concurrency-alert .alert-reason {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.6;
+}
+
+.zero-concurrency-alert code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 11px;
+    color: #fca5a5;
+}
 
         .info-box {
             background: rgba(255, 255, 255, 0.03);
@@ -342,6 +410,42 @@
         .gpu-chip .gpu-name { color: rgba(255, 255, 255, 0.6); }
         .gpu-chip .gpu-mem  { font-size: 11px; color: rgba(255, 255, 255, 0.25); margin-top: 2px; }
 
+        .mode-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .mode-option {
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .mode-option:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .mode-option.selected {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.6);
+            box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+        }
+        .mode-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.85);
+            margin-bottom: 4px;
+        }
+        .mode-desc {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.35);
+            line-height: 1.4;
+        }
+
         /* ===== PC 窄窗口适配（确保架构参数输入宽度不小于 400px）===== */
         @media (min-width: 769px) and (max-width: 960px) {
             .form-row.four { grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -367,6 +471,9 @@
 
             /* 表单网格改为单列 */
             .form-row, .form-row.three, .form-row.four { grid-template-columns: 1fr; gap: 0; }
+            .form-group { margin-bottom: 12px; }
+            .mode-toggle { grid-template-columns: 1fr; }
+            .mode-option { padding: 12px 14px; }
             .form-group { margin-bottom: 12px; }
             .form-group label { font-size: 13px; margin-bottom: 6px; text-align: center; }
             .form-group input, .form-group select { padding: 12px 14px; font-size: 16px; border-radius: 8px; text-align: center; text-align-last: center; background: rgba(255, 255, 255, 0.07); border-color: rgba(255, 255, 255, 0.22); }
@@ -564,7 +671,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>大模型显存估算系统<span class="version">v1.6</span></h1>
+        <h1>大模型显存估算系统<span class="version">v1.9</span></h1>
         <div class="subtitle">
             <span class="subtitle-text">model-vram-calc · 显存占用 · KV Cache · 并发能力</span>
             <span class="header-links"><a href="vram_calc.html">计算方式说明</a><a href="donate/about.html">关于</a></span>
@@ -574,7 +681,7 @@
     <div class="content">
 
         <div class="section">
-            <div class="section-title">选择模型 (100B+)</div>
+            <div class="section-title">选择模型 (100B+) · 数据来源 modelscope.cn</div>
             <div class="model-card" id="modelCard"></div>
         </div>
 
@@ -680,7 +787,19 @@
             </div>
         </div>
 
-        <button class="calculate-btn" onclick="calculate()">重新计算</button>
+        <div class="section">
+            <div class="section-title">估算模式</div>
+            <div class="mode-toggle">
+                <div class="mode-option selected" data-mode="conservative" onclick="selectMode('conservative')">
+                    <div class="mode-label">保守估算</div>
+                    <div class="mode-desc">推理开销 15% · 单位 1e9 · 含对齐损耗</div>
+                </div>
+                <div class="mode-option" data-mode="optimistic" onclick="selectMode('optimistic')">
+                    <div class="mode-label">乐观估算</div>
+                    <div class="mode-desc">推理开销 8% · 单位 1024³ · 理论值</div>
+                </div>
+            </div>
+        </div>
 
         <div class="section">
             <div class="section-title">计算结果</div>
@@ -714,20 +833,31 @@
                     <div class="result-card">
                         <div class="result-value" id="minGpus">--</div>
                         <div class="result-unit">张</div>
-                        <div class="result-label">最少 GPU 数量</div>
+                        <div class="result-label">最少需要 GPU</div>
                     </div>
                 </div>
+
+                <div class="zero-concurrency-alert" id="zeroConcurrencyAlert">
+                    <div class="alert-title">⚠️ 无法支持并发：显存空间不足</div>
+                    <div class="alert-reason" id="zeroConcurrencyReason"></div>
+                </div>
+
                 <div class="prog-bar-wrap">
                     <div class="prog-bar-label">
                         <span>显存占用率</span>
                         <span id="usagePercent">--%</span>
                     </div>
                     <div class="prog-bar"><div class="prog-bar-fill" id="progFill" style="width:0%"></div></div>
+                    <div class="calc-progress" id="calcProgress">
+                        <div class="spinner"></div>
+                        <span class="spinner-text">正在重新计算...</span>
+                    </div>
                 </div>
                 <div class="result-footer">
                     <div class="info-box" id="infoBox" style="display:none;">
                         <strong>计算明细：</strong>
                         <ul>
+                            <li id="info0"></li>
                             <li id="info1"></li>
                             <li id="info2"></li>
                             <li id="info3"></li>
@@ -762,28 +892,30 @@ const contextOptions = [
 ];
 
 const models = [
-    { name: 'DeepSeek V4-Pro',  params: '1.6T MoE 49B active',     size: 3200, h: 7168,  layers: 61, attnHeads: 64, kvHeads: 8, maxCtx: 1048576, badge: '旗舰' },
-    { name: 'DeepSeek V4-Flash',params: '284B MoE 13B active',     size: 568,  h: 4096,  layers: 43, attnHeads: 32, kvHeads: 8, maxCtx: 1048576, badge: '最新' },
+    { name: 'DeepSeek V4-Pro',  params: '1.6T MoE 49B active',     size: 3200, h: 7168,  layers: 61, attnHeads: 128, kvHeads: 8, maxCtx: 1048576, badge: '旗舰' },
+    { name: 'DeepSeek V4-Flash',params: '284B MoE 13B active',     size: 568,  h: 4096,  layers: 43, attnHeads: 64, kvHeads: 1, maxCtx: 1048576, badge: '最新' },
     { name: 'DeepSeek V3.2',    params: '671B MoE 37B active',     size: 1342, h: 7168,  layers: 67, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
     { name: 'DeepSeek V3.1',    params: '671B MoE 37B active',     size: 1342, h: 7168,  layers: 67, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
     { name: 'DeepSeek V3',      params: '671B MoE 37B active',     size: 1342, h: 7168,  layers: 67, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
     { name: 'DeepSeek R1',      params: '660B MoE 37B active',     size: 1320, h: 7168,  layers: 67, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
-    { name: 'GLM-5',            params: '745B MoE 44B active',     size: 1490, h: 7168,  layers: 62, attnHeads: 64, kvHeads: 8, maxCtx: 200704,  badge: '' },
-    { name: 'GLM-5.1',          params: '744B MoE 40B active',     size: 1488, h: 7168,  layers: 62, attnHeads: 64, kvHeads: 8, maxCtx: 200704,  badge: '' },
-    { name: 'Qwen3.6 35B-A3B',  params: '35B MoE 3B active',      size: 70,   h: 3072,  layers: 40, attnHeads: 48, kvHeads: 8, maxCtx: 1048576, badge: 'Coding' },
-    { name: 'Qwen3 235B',       params: '235B MoE',                size: 470,  h: 5120,  layers: 60, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
-    { name: 'Qwen3.5 235B',     params: '235B MoE',                size: 470,  h: 5120,  layers: 60, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '' },
+    { name: 'GLM-5',            params: '745B MoE 44B active',     size: 1490, h: 6144,  layers: 78, attnHeads: 64, kvHeads: 64, maxCtx: 200704,  badge: '' },
+    { name: 'GLM-5.1',          params: '744B MoE 40B active',     size: 1488, h: 6144,  layers: 78, attnHeads: 64, kvHeads: 64, maxCtx: 200704,  badge: 'Coding' },
+    { name: 'Qwen3-235B',       params: '235B MoE 22B active',     size: 470,  h: 4096,  layers: 94, attnHeads: 64, kvHeads: 4, maxCtx: 131072,  badge: '' },
+    { name: 'Qwen3.5 397B',     params: '397B MoE 17B active',     size: 794,  h: 4096,  layers: 60, attnHeads: 32, kvHeads: 2, maxCtx: 262144,  badge: '最新' },
+    { name: 'Qwen3.6 35B',      params: '35B MoE 3B active',       size: 70,   h: 2048,  layers: 40, attnHeads: 32, kvHeads: 4, maxCtx: 1048576, badge: 'Coding' },
     { name: 'Minimax M2.7',     params: '230B MoE 10B active',     size: 460,  h: 3072,  layers: 62, attnHeads: 48, kvHeads: 8, maxCtx: 200704,  badge: '' },
 ];
 
 const gpuPresets = [
     { name: 'H200 141G', mem: 141 },
+    { name: 'H100 NVL 94G', mem: 94 },
+    { name: 'H100 80G', mem: 80 },
     { name: 'H20 141G',  mem: 141 },
     { name: 'B200 192G', mem: 192 },
     { name: 'RTX 5090',  mem: 32 },
     { name: 'RTX 4090',  mem: 24 },
     { name: 'A710E',     mem: 96 },
-    { name: '真武810E',  mem: 96 },
+    { name: '真武 810E',  mem: 96 },
 ];
 
 function initModels() {
@@ -797,6 +929,17 @@ function initModels() {
         opt.onclick = (e) => selectModel(m, e);
         card.appendChild(opt);
     });
+}
+
+let currentMode = 'conservative';
+let isCalculating = false;
+
+function selectMode(mode) {
+    if (isCalculating) return;
+    currentMode = mode;
+    document.querySelectorAll('.mode-option').forEach(el => el.classList.remove('selected'));
+    document.querySelector(`.mode-option[data-mode="${mode}"]`).classList.add('selected');
+    calculate();
 }
 
 function initGpus() {
@@ -824,6 +967,17 @@ function initContextOptions() {
         o.textContent = opt.label;
         sel.appendChild(o);
     });
+    // Auto-calculate on input change
+    const inputs = ['modelSize', 'quantization', 'hiddenDim', 'numLayers', 'attnHeads', 'kvHeads', 'contextLen', 'kvCacheType', 'gpuMemory', 'gpuCount', 'reservedMemory', 'overheadRatio'];
+    inputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', calculate);
+            if (el.tagName === 'INPUT') {
+                el.addEventListener('input', calculate);
+            }
+        }
+    });
 }
 
 function selectModel(model, e) {
@@ -838,6 +992,15 @@ function selectModel(model, e) {
 }
 
 function calculate() {
+    if (isCalculating) return;
+    isCalculating = true;
+    document.getElementById('calcProgress').classList.add('show');
+    
+    // Simulate small delay for progress animation
+    setTimeout(() => doCalculate(), 150);
+}
+
+function doCalculate() {
     const modelSizeGB    = parseFloat(document.getElementById('modelSize').value);
     const quantization   = document.getElementById('quantization').value;
     const hiddenDim      = parseInt(document.getElementById('hiddenDim').value);
@@ -849,7 +1012,23 @@ function calculate() {
     const gpuMemoryGB    = parseFloat(document.getElementById('gpuMemory').value);
     const gpuCount       = parseInt(document.getElementById('gpuCount').value);
     const reservedGB     = parseFloat(document.getElementById('reservedMemory').value);
-    const overheadRatio  = parseFloat(document.getElementById('overheadRatio').value);
+    
+    let overheadRatio  = parseFloat(document.getElementById('overheadRatio').value);
+    let unitConverter  = 1e9;
+    let alignmentLoss  = 0;
+    let modeName = '';
+    
+    if (currentMode === 'conservative') {
+        overheadRatio = Math.max(overheadRatio, 0.15);
+        unitConverter = 1e9;
+        alignmentLoss = 0.08;
+        modeName = '保守估算';
+    } else {
+        overheadRatio = Math.min(overheadRatio, 0.08);
+        unitConverter = Math.pow(1024, 3);
+        alignmentLoss = 0;
+        modeName = '乐观估算';
+    }
 
     if (!modelSizeGB || !gpuMemoryGB || !hiddenDim || !numLayers) {
         alert('请填写完整参数'); return;
@@ -865,7 +1044,7 @@ function calculate() {
     const kvRatio  = kvHeads / attnHeads;
     const kvDim    = hiddenDim * kvRatio;
     const kvBytes  = kvCacheType === 'fp16' ? 2 : kvCacheType === 'fp8' ? 1 : 0.5;
-    const kvCacheSizeGB = (2 * numLayers * kvDim * contextLen * kvBytes) / 1e9;
+    const kvCacheSizeGB = (2 * numLayers * kvDim * contextLen * kvBytes) / unitConverter * (1 + alignmentLoss);
 
     const overheadGB = modelWeightMem * overheadRatio;
     const sessionMemoryGB = modelWeightMem + kvCacheSizeGB + overheadGB;
@@ -893,18 +1072,51 @@ function calculate() {
     const ctxStr = ctxLabel ? ctxLabel.label : contextLen;
 
     document.getElementById('infoBox').style.display = 'block';
+    document.getElementById('info0').textContent = `模式：${modeName}（${currentMode === 'conservative' ? '推理开销≥15% · 单位 1e9 · 含 8% 对齐损耗' : '推理开销≤8% · 单位 1024³ · 理论值'}）`;
     document.getElementById('info1').textContent =
-        `权重: ${modelSizeGB} GB (FP16) × ${ratio} (${qLabel}) = ${modelWeightMem.toFixed(1)} GB`;
+        `权重：${modelSizeGB} GB (FP16) × ${ratio} (${qLabel}) = ${modelWeightMem.toFixed(1)} GB`;
     document.getElementById('info2').textContent =
-        `KV Cache: 2 × ${numLayers}层 × ${hiddenDim}维 × ${kvRatio.toFixed(2)} (KV比例) × ${ctxStr} × ${kvBytes}B = ${kvCacheSizeGB.toFixed(2)} GB`;
+        `KV Cache: 2 × ${numLayers}层 × ${hiddenDim}维 × ${kvRatio.toFixed(2)} (KV 比例) × ${ctxStr} × ${kvBytes}B${alignmentLoss > 0 ? ' × 1.08(对齐)' : ''} = ${kvCacheSizeGB.toFixed(2)} GB`;
     document.getElementById('info3').textContent =
-        `推理开销: ${modelWeightMem.toFixed(1)} × ${overheadRatio} = ${overheadGB.toFixed(1)} GB`;
+        `推理开销：${modelWeightMem.toFixed(1)} × ${overheadRatio.toFixed(0)} = ${overheadGB.toFixed(1)} GB`;
     document.getElementById('info4').textContent =
         `单 session: ${modelWeightMem.toFixed(1)} + ${kvCacheSizeGB.toFixed(2)} + ${overheadGB.toFixed(1)} = ${sessionMemoryGB.toFixed(1)} GB`;
     document.getElementById('info5').textContent =
         `集群 ${gpuCount}×${gpuMemoryGB}GB = ${clusterTotalGB}GB, 可用 ${availableGB.toFixed(0)} GB (扣 ${reservedGB} GB 预留)`;
     document.getElementById('info6').textContent =
-        `最少需要 ${minGpus} 张 GPU 加载权重, 剩余空间支持 ${maxConcurrency > 0 ? maxConcurrency : '0'} 个并发 session`;
+        `最少需要 ${minGpus} 张 GPU 加载权重，剩余空间支持 ${maxConcurrency > 0 ? maxConcurrency : '0'} 个并发 session`;
+    
+    // Show/hide zero concurrency alert
+    const alertEl = document.getElementById('zeroConcurrencyAlert');
+    const reasonEl = document.getElementById('zeroConcurrencyReason');
+    if (maxConcurrency <= 0) {
+        const weightPlusReserved = modelWeightMem + reservedGB;
+        const sessionCost = kvCacheSizeGB + overheadGB;
+        let reasons = [];
+        
+        if (weightPlusReserved >= clusterTotalGB) {
+            reasons.push(`模型权重 (${modelWeightMem.toFixed(1)} GB) + 系统预留 (${reservedGB} GB) 已超过集群总显存 (${clusterTotalGB} GB)`);
+        } else if (availableGB <= modelWeightMem) {
+            reasons.push(`扣除预留后可用显存 (${availableGB.toFixed(0)} GB) 不足以加载模型权重 (${modelWeightMem.toFixed(1)} GB)`);
+        }
+        
+        if (sessionCost >= (availableGB - modelWeightMem) && availableGB > modelWeightMem) {
+            const remainingAfterLoad = availableGB - modelWeightMem;
+            reasons.push(`加载权重后剩余显存 (${remainingAfterLoad.toFixed(1)} GB) 无法满足单个 session 的 KV Cache + 推理开销 (${sessionCost.toFixed(1)} GB)`);
+        }
+        
+        if (reasons.length === 0) {
+            reasons.push(`单 session 所需显存 (${sessionMemoryGB.toFixed(1)} GB) 超过单卡显存限制 (${gpuMemoryGB} GB)`);
+        }
+        
+        reasonEl.innerHTML = reasons.map(r => `<div>• ${r}</div>`).join('');
+        alertEl.classList.add('show');
+    } else {
+        alertEl.classList.remove('show');
+    }
+    
+    document.getElementById('calcProgress').classList.remove('show');
+    isCalculating = false;
 }
 
 function openModal(img) {
