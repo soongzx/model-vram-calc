@@ -990,6 +990,7 @@ function selectModel(model, e) {
     document.getElementById('attnHeads').value  = model.attnHeads;
     document.getElementById('kvHeads').value    = model.kvHeads;
     document.getElementById('contextLen').value = model.maxCtx;
+    calculate();
 }
 
 function calculate() {
