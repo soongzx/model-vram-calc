@@ -40,3 +40,11 @@ Open `index.html` directly in a browser. No dev server needed.
 
 - Single branch: `main`
 - Shallow clone (`.git/shallow` exists)
+
+## Push Rules
+
+- **Only push when explicitly requested**: Do NOT push to remote unless the user explicitly asks to "push", "deploy", or "sync" code
+- **Push to main branch directly**: When pushing, use `main` branch (no pull requests, no feature branches)
+- **Commit before push**: Always create a commit with a meaningful message before pushing
+- **No force push**: Never use `--force` or `-f` unless explicitly instructed
+

@@ -4,6 +4,13 @@ model-vram-calc — 在线估算大模型显存占用、KV Cache 与集群并发
 
 ## 版本更新
 
+### v2.2（2026-05-25）
+
+- **新增模型**：
+  - Qwen3.5 397B-A17B (BF16): 397B MoE 17B active, h=4096, layers=60, kvHeads=2, 256K 上下文
+  - Qwen3.5 397B-A17B-FP8: FP8 量化版，显存减半（397GB）
+- 参数来源：魔搭社区官方 config.json
+
 ### v2.1（2026-05-24）
 
 - **Vercel 部署支持**：
