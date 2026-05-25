@@ -178,10 +178,12 @@ KV Cache = 2 × 62 × 896 × 4096 × 2 / 1e9 ≈ 0.91 GB/session
 | Qwen3.5 397B-A17B (BF16) | 794 GB | 4096 | 60 | 32 | 2 | 256K |
 | Qwen3.5 397B-A17B-FP8 | 397 GB | 4096 | 60 | 32 | 2 | 256K |
 | Qwen3.6 35B-A3B | 70 GB | 3072 | 40 | 48 | 8 | 1M |
+| Qwen2.5-VL 72B | 144 GB | 8192 | 80 | 64 | 8 | 128K |
 | Minimax M2.7 | 460 GB | 3072 | 62 | 48 | 8 | 200K |
 
 DeepSeek V4 系列基于 2026 年 4 月发布的技术报告，采用混合注意力 + MoE 架构。
 Qwen3.6 35B-A3B 是阿里 2026 年发布的 Agentic Coding 专用模型，采用 Gated DeltaNet + MoE 混合架构。
+Qwen2.5-VL 72B 是通义千问多模态视觉模型，支持图像和视频理解。
 
 > ⚠️ **注意**：Qwen3-235B 存在两个变体——稠密版（h=5120, layers=60）和 MoE 版（h=4096, layers=94）。当前工具使用 MoE 版 (Qwen3-235B-A22B) 参数。
 

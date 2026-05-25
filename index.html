@@ -671,7 +671,7 @@
 <body>
 <div class="container">
     <div class="header">
-        <h1>大模型显存估算系统<span class="version">v2.2</span></h1>
+        <h1>大模型显存估算系统<span class="version">v2.3</span></h1>
         <div class="subtitle">
             <span class="subtitle-text">model-vram-calc · 显存占用 · KV Cache · 并发能力</span>
             <span class="header-links"><a href="vram_calc.html">计算方式说明</a><a href="donate/about.html">关于</a></span>
@@ -904,6 +904,7 @@ const models = [
     { name: 'Qwen3.5 397B-A17B',params: '397B MoE 17B active (BF16)', size: 794,  h: 4096,  layers: 60, attnHeads: 32, kvHeads: 2, maxCtx: 262144,  badge: '新版' },
     { name: 'Qwen3.5 397B-A17B-FP8',params: '397B MoE 17B active (FP8)', size: 397,  h: 4096,  layers: 60, attnHeads: 32, kvHeads: 2, maxCtx: 262144,  badge: '量化' },
     { name: 'Qwen3.6 35B',      params: '35B MoE 3B active',       size: 70,   h: 2048,  layers: 40, attnHeads: 32, kvHeads: 4, maxCtx: 1048576, badge: 'Coding' },
+    { name: 'Qwen2.5-VL 72B',   params: '72B Dense (VL)',          size: 144,  h: 8192,  layers: 80, attnHeads: 64, kvHeads: 8, maxCtx: 131072,  badge: '视觉' },
     { name: 'Minimax M2.7',     params: '230B MoE 10B active',     size: 460,  h: 3072,  layers: 62, attnHeads: 48, kvHeads: 8, maxCtx: 200704,  badge: '' },
 ];
 
