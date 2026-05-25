@@ -989,8 +989,26 @@ function selectModel(model, e) {
     document.getElementById('numLayers').value  = model.layers;
     document.getElementById('attnHeads').value  = model.attnHeads;
     document.getElementById('kvHeads').value    = model.kvHeads;
-    document.getElementById('contextLen').value = model.maxCtx;
+    
+    // Set context length and ensure it has a value
+    const contextSel = document.getElementById('contextLen');
+    contextSel.value = model.maxCtx;
+    // If the value doesn't match any option, add it
+    if (!contextSel.selectedOptions.length) {
+        const opt = document.createElement('option');
+        opt.value = model.maxCtx;
+        opt.textContent = formatContextLen(model.maxCtx);
+        contextSel.appendChild(opt);
+        contextSel.value = model.maxCtx;
+    }
+    
     calculate();
+}
+
+function formatContextLen(len) {
+    if (len >= 1048576) return len / 1048576 + 'M';
+    if (len >= 1024) return Math.round(len / 1024) + 'K';
+    return String(len);
 }
 
 function calculate() {
